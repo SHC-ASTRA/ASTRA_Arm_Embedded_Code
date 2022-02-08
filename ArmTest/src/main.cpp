@@ -27,6 +27,8 @@ int m3Enc2 = 35;
 const int StepperCSPin = 10;
 const int SensorCSPin = 24;
 
+int p29State = LOW;
+
 HighPowerStepperDriver sd;
 
 // AS5X47 as5047d(SensorCSPin);
@@ -117,6 +119,8 @@ void setup()
   encoder3.readAndReset();
 
   Serial.println("Hi!");
+
+  pinMode(29,INPUT);
 }
 
 unsigned long last_step = 0;
@@ -279,6 +283,14 @@ void loop()
     Serial.print(actuator2Targ);
     Serial.print(", 3=");
     Serial.println(actuator3Targ);
+  }
+
+  int newP29State = digitalRead(29);
+  if (newP29State != p29State)
+  {
+    p29State = newP29State;
+    Serial.print("Pin 29 changed to ");
+    Serial.println(p29State ? "HIGH" : "LOW");
   }
 
   // if (millis() > last_send + 50)
