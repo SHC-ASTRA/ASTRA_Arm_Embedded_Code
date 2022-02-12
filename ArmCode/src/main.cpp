@@ -222,7 +222,7 @@ void loop()
         digitalWrite(m2PwmPin, HIGH);
         digitalWrite(m3PwmPin, HIGH);
       }
-      Serial.print("Setting target to ");
+      Serial.print("status;Setting target to ");
       Serial.println(target);
     }
     else if (device >= 'A' && device <= 'C')
@@ -291,7 +291,7 @@ void loop()
   if (newP29State != p29State)
   {
     p29State = newP29State;
-    Serial.print("Pin 29 changed to ");
+    Serial.print("status;Pin 29 changed to ");
     Serial.println(p29State ? "HIGH" : "LOW");
   }
 }
