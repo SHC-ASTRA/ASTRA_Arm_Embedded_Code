@@ -276,7 +276,7 @@ void loop()
       }
     }
 
-    Serial.print("Targets: S=");
+    Serial.print("status;Targets: S=");
     Serial.print(target);
     Serial.print(", 1=");
     Serial.print(actuator1Targ);
