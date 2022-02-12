@@ -43,6 +43,8 @@ int actuator3Targ = 0;
 
 int actuatorTolerance = 50;
 
+void monitor_actuators();
+
 void setup()
 {
 
@@ -120,7 +122,7 @@ void setup()
 
   Serial.println("status;Arm base setup complete!");
 
-  pinMode(29,INPUT);
+  pinMode(29, INPUT);
 }
 
 unsigned long last_step = 0;
@@ -143,7 +145,7 @@ void loop()
     }
   }
 
-  if (millis() > last_print+1000)
+  if (millis() > last_print + 1000)
   {
     last_print = millis();
     Serial.print("Positions: S=");
@@ -156,50 +158,7 @@ void loop()
     Serial.println(encoder3.read());
   }
 
-  if (encoder1.read() > actuator1Targ + actuatorTolerance / 2)
-  {
-    digitalWrite(m1DirPin, HIGH);
-    digitalWrite(m1PwmPin, HIGH);
-  }
-  else if (encoder1.read() < actuator1Targ - actuatorTolerance / 2)
-  {
-    digitalWrite(m1DirPin, LOW);
-    digitalWrite(m1PwmPin, HIGH);
-  }
-  else
-  {
-    digitalWrite(m1PwmPin, LOW);
-  }
-
-  if (encoder2.read() > actuator2Targ + actuatorTolerance / 2)
-  {
-    digitalWrite(m2DirPin, HIGH);
-    digitalWrite(m2PwmPin, HIGH);
-  }
-  else if (encoder2.read() < actuator2Targ - actuatorTolerance / 2)
-  {
-    digitalWrite(m2DirPin, LOW);
-    digitalWrite(m2PwmPin, HIGH);
-  }
-  else
-  {
-    digitalWrite(m2PwmPin, LOW);
-  }
-
-  if (encoder3.read() > actuator3Targ + actuatorTolerance / 2)
-  {
-    digitalWrite(m3DirPin, HIGH);
-    digitalWrite(m3PwmPin, HIGH);
-  }
-  else if (encoder3.read() < actuator3Targ - actuatorTolerance / 2)
-  {
-    digitalWrite(m3DirPin, LOW);
-    digitalWrite(m3PwmPin, HIGH);
-  }
-  else
-  {
-    digitalWrite(m3PwmPin, LOW);
-  }
+  monitor_actuators();
 
   if (Serial.available() > 1)
   {
@@ -259,17 +218,17 @@ void loop()
         steps = 0;
         target = 0;
       }
-      else if(value == 1)
+      else if (value == 1)
       {
         encoder1.readAndReset();
         actuator1Targ = 0;
       }
-      else if(value == 2)
+      else if (value == 2)
       {
         encoder2.readAndReset();
         actuator2Targ = 0;
       }
-      else if(value == 3)
+      else if (value == 3)
       {
         encoder3.readAndReset();
         actuator3Targ = 0;
@@ -293,5 +252,53 @@ void loop()
     p29State = newP29State;
     Serial.print("status;Pin 29 changed to ");
     Serial.println(p29State ? "HIGH" : "LOW");
+  }
+}
+
+void monitor_actuators()
+{
+  if (encoder1.read() > actuator1Targ + actuatorTolerance / 2)
+  {
+    digitalWrite(m1DirPin, HIGH);
+    digitalWrite(m1PwmPin, HIGH);
+  }
+  else if (encoder1.read() < actuator1Targ - actuatorTolerance / 2)
+  {
+    digitalWrite(m1DirPin, LOW);
+    digitalWrite(m1PwmPin, HIGH);
+  }
+  else
+  {
+    digitalWrite(m1PwmPin, LOW);
+  }
+
+  if (encoder2.read() > actuator2Targ + actuatorTolerance / 2)
+  {
+    digitalWrite(m2DirPin, HIGH);
+    digitalWrite(m2PwmPin, HIGH);
+  }
+  else if (encoder2.read() < actuator2Targ - actuatorTolerance / 2)
+  {
+    digitalWrite(m2DirPin, LOW);
+    digitalWrite(m2PwmPin, HIGH);
+  }
+  else
+  {
+    digitalWrite(m2PwmPin, LOW);
+  }
+
+  if (encoder3.read() > actuator3Targ + actuatorTolerance / 2)
+  {
+    digitalWrite(m3DirPin, HIGH);
+    digitalWrite(m3PwmPin, HIGH);
+  }
+  else if (encoder3.read() < actuator3Targ - actuatorTolerance / 2)
+  {
+    digitalWrite(m3DirPin, LOW);
+    digitalWrite(m3PwmPin, HIGH);
+  }
+  else
+  {
+    digitalWrite(m3PwmPin, LOW);
   }
 }
