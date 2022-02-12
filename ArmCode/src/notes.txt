@@ -1,0 +1,4 @@
+Commands:
+-move_stepper direction(right/left) delta
+-move_actuator direction(in/out) delta
+-read_actuator
