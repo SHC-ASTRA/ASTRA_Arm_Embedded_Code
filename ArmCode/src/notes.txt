@@ -1,6 +1,6 @@
 Commands:
--move_stepper direction(right/left) delta
--move_actuator direction(in/out) delta
+-move_stepper delta
+-move_actuator actuator delta
 -read_actuator
 
 Actuator Control:

@@ -6,23 +6,23 @@
 int stepPwmPin = 8;
 int stepDirPin = 9;
 
-int m1PwmPin = 18;
-int m1DirPin = 19;
+int m2PwmPin = 18;
+int m2DirPin = 19;
 
-int m2PwmPin = 14;
-int m2DirPin = 15;
+int m3PwmPin = 14;
+int m3DirPin = 15;
 
-int m3PwmPin = 36;
-int m3DirPin = 37;
+int m4PwmPin = 36;
+int m4DirPin = 37;
 
-int m1Enc1 = 22;
-int m1Enc2 = 23;
+int m2Enc1 = 22;
+int m2Enc2 = 23;
 
-int m2Enc1 = 40;
-int m2Enc2 = 41;
+int m3Enc1 = 40;
+int m3Enc2 = 41;
 
-int m3Enc1 = 34;
-int m3Enc2 = 35;
+int m4Enc1 = 34;
+int m4Enc2 = 35;
 
 const int StepperCSPin = 10;
 const int SensorCSPin = 24;
@@ -33,17 +33,21 @@ HighPowerStepperDriver sd;
 
 int iter = 0;
 
-Encoder encoder1(m1Enc1, m1Enc2);
 Encoder encoder2(m2Enc1, m2Enc2);
 Encoder encoder3(m3Enc1, m3Enc2);
+Encoder encoder4(m4Enc1, m4Enc2);
 
-int actuator1Targ = 0;
 int actuator2Targ = 0;
 int actuator3Targ = 0;
+int actuator4Targ = 0;
 
 int actuatorTolerance = 50;
 
-void monitor_actuators();
+//*******************************
+// Function Declarations
+//*******************************
+void monitorActuators();
+void parseCommand(String command);
 
 void setup()
 {
@@ -94,11 +98,6 @@ void setup()
 
   delay(1000);
 
-  pinMode(m1PwmPin, OUTPUT);
-  pinMode(m1DirPin, OUTPUT);
-  digitalWrite(m1DirPin, LOW);
-  digitalWrite(m1PwmPin, LOW);
-
   pinMode(m2PwmPin, OUTPUT);
   pinMode(m2DirPin, OUTPUT);
   digitalWrite(m2DirPin, LOW);
@@ -109,16 +108,21 @@ void setup()
   digitalWrite(m3DirPin, LOW);
   digitalWrite(m3PwmPin, LOW);
 
+  pinMode(m4PwmPin, OUTPUT);
+  pinMode(m4DirPin, OUTPUT);
+  digitalWrite(m4DirPin, LOW);
+  digitalWrite(m4PwmPin, LOW);
+
   Serial.print("status;");
-  Serial.print(encoder1.read());
-  Serial.print(", ");
   Serial.print(encoder2.read());
   Serial.print(", ");
-  Serial.println(encoder3.read());
+  Serial.print(encoder3.read());
+  Serial.print(", ");
+  Serial.println(encoder4.read());
 
-  encoder1.readAndReset();
   encoder2.readAndReset();
   encoder3.readAndReset();
+  encoder4.readAndReset();
 
   Serial.println("status;Arm base setup complete!");
 
@@ -151,98 +155,99 @@ void loop()
     Serial.print("Positions: S=");
     Serial.print(steps);
     Serial.print(", 1=");
-    Serial.print(encoder1.read());
-    Serial.print(", 2=");
     Serial.print(encoder2.read());
+    Serial.print(", 2=");
+    Serial.print(encoder3.read());
     Serial.print(", 3=");
-    Serial.println(encoder3.read());
+    Serial.println(encoder4.read());
   }
 
-  monitor_actuators();
+  monitorActuators();
 
   if (Serial.available() > 1)
   {
-    String message = Serial.readStringUntil('\n');
-    char device = message.charAt(0);
-    int value = message.substring(1).toInt();
-    if (device == 'S')
-    {
-      target = value;
-      if (target > steps)
-      {
-        dir = 1;
-        sd.setDirection(1);
-      }
-      else if (target < steps)
-      {
-        dir = -1;
-        sd.setDirection(0);
-        digitalWrite(m1PwmPin, HIGH);
-        digitalWrite(m2PwmPin, HIGH);
-        digitalWrite(m3PwmPin, HIGH);
-      }
-      Serial.print("status;Setting target to ");
-      Serial.println(target);
-    }
-    else if (device >= 'A' && device <= 'C')
-    {
-      int actuatorIndex = (int)(device - 'A');
+    String command = Serial.readStringUntil('\n');
+    parseCommand(command);
+    // char device = message.charAt(0);
+    // int value = message.substring(1).toInt();
+    // if (device == 'S')
+    // {
+    //   target = value;
+    //   if (target > steps)
+    //   {
+    //     dir = 1;
+    //     sd.setDirection(1);
+    //   }
+    //   else if (target < steps)
+    //   {
+    //     dir = -1;
+    //     sd.setDirection(0);
+    //     digitalWrite(m1PwmPin, HIGH);
+    //     digitalWrite(m2PwmPin, HIGH);
+    //     digitalWrite(m3PwmPin, HIGH);
+    //   }
+    //   Serial.print("status;Setting target to ");
+    //   Serial.println(target);
+    // }
+    // else if (device >= 'A' && device <= 'C')
+    // {
+    //   int actuatorIndex = (int)(device - 'A');
 
-      switch (actuatorIndex)
-      {
-      case 0:
-        actuator1Targ = value;
-        break;
-      case 1:
-        actuator2Targ = value;
-        break;
-      case 2:
-        actuator3Targ = value;
-        break;
+    //   switch (actuatorIndex)
+    //   {
+    //   case 0:
+    //     actuator1Targ = value;
+    //     break;
+    //   case 1:
+    //     actuator2Targ = value;
+    //     break;
+    //   case 2:
+    //     actuator3Targ = value;
+    //     break;
 
-      default:
-        break;
-      }
-    }
-    else if (device == '0')
-    {
-      target = steps;
-      actuator1Targ = encoder1.read();
-      actuator2Targ = encoder2.read();
-      actuator3Targ = encoder3.read();
-    }
-    else if (device == 'Z')
-    {
-      if (value == 0)
-      {
-        steps = 0;
-        target = 0;
-      }
-      else if (value == 1)
-      {
-        encoder1.readAndReset();
-        actuator1Targ = 0;
-      }
-      else if (value == 2)
-      {
-        encoder2.readAndReset();
-        actuator2Targ = 0;
-      }
-      else if (value == 3)
-      {
-        encoder3.readAndReset();
-        actuator3Targ = 0;
-      }
-    }
+    //   default:
+    //     break;
+    //   }
+    // }
+    // else if (device == '0')
+    // {
+    //   target = steps;
+    //   actuator1Targ = encoder1.read();
+    //   actuator2Targ = encoder2.read();
+    //   actuator3Targ = encoder3.read();
+    // }
+    // else if (device == 'Z')
+    // {
+    //   if (value == 0)
+    //   {
+    //     steps = 0;
+    //     target = 0;
+    //   }
+    //   else if (value == 1)
+    //   {
+    //     encoder1.readAndReset();
+    //     actuator1Targ = 0;
+    //   }
+    //   else if (value == 2)
+    //   {
+    //     encoder2.readAndReset();
+    //     actuator2Targ = 0;
+    //   }
+    //   else if (value == 3)
+    //   {
+    //     encoder3.readAndReset();
+    //     actuator3Targ = 0;
+    //   }
+    // }
 
-    Serial.print("status;Targets: S=");
-    Serial.print(target);
-    Serial.print(", 1=");
-    Serial.print(actuator1Targ);
-    Serial.print(", 2=");
-    Serial.print(actuator2Targ);
-    Serial.print(", 3=");
-    Serial.println(actuator3Targ);
+    // Serial.print("status;Targets: S=");
+    // Serial.print(target);
+    // Serial.print(", 1=");
+    // Serial.print(actuator1Targ);
+    // Serial.print(", 2=");
+    // Serial.print(actuator2Targ);
+    // Serial.print(", 3=");
+    // Serial.println(actuator3Targ);
   }
 
   // Read the axis 1 homing switch
@@ -255,23 +260,8 @@ void loop()
   }
 }
 
-void monitor_actuators()
+void monitorActuators()
 {
-  if (encoder1.read() > actuator1Targ + actuatorTolerance / 2)
-  {
-    digitalWrite(m1DirPin, HIGH);
-    digitalWrite(m1PwmPin, HIGH);
-  }
-  else if (encoder1.read() < actuator1Targ - actuatorTolerance / 2)
-  {
-    digitalWrite(m1DirPin, LOW);
-    digitalWrite(m1PwmPin, HIGH);
-  }
-  else
-  {
-    digitalWrite(m1PwmPin, LOW);
-  }
-
   if (encoder2.read() > actuator2Targ + actuatorTolerance / 2)
   {
     digitalWrite(m2DirPin, HIGH);
@@ -300,5 +290,51 @@ void monitor_actuators()
   else
   {
     digitalWrite(m3PwmPin, LOW);
+  }
+
+  if (encoder4.read() > actuator4Targ + actuatorTolerance / 2)
+  {
+    digitalWrite(m4DirPin, HIGH);
+    digitalWrite(m4PwmPin, HIGH);
+  }
+  else if (encoder4.read() < actuator4Targ - actuatorTolerance / 2)
+  {
+    digitalWrite(m4DirPin, LOW);
+    digitalWrite(m4PwmPin, HIGH);
+  }
+  else
+  {
+    digitalWrite(m4PwmPin, LOW);
+  }
+}
+
+void parse_command(String command)
+{
+  String exec = command.substring(0, command.indexOf(';'));
+  if (exec.equals("move_actuator"))
+  {
+    int firstComma = command.indexOf(',');
+    String actuator = command.substring(exec.length() + 1, firstComma);
+    String delta_str = command.substring(firstComma + 1);
+
+    int delta = atoi(delta_str.c_str());
+
+    if (actuator.equals("2"))
+    {
+      actuator2Targ += delta;
+    }
+    else if (actuator.equals("3"))
+    {
+      actuator3Targ += delta;
+    }
+    else if (actuator.equals("4"))
+    {
+      actuator4Targ += delta;
+    }
+  } else if (exec.equals("move_stepper"))
+  {
+    String delta_str = command.substring(exec.length() + 1);
+
+    int delta = atoi(delta_str.c_str());
   }
 }
