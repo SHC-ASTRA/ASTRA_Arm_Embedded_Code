@@ -31,8 +31,6 @@ int p29State = LOW;
 
 HighPowerStepperDriver sd;
 
-// AS5X47 as5047d(SensorCSPin);
-
 int iter = 0;
 
 Encoder encoder1(m1Enc1, m1Enc2);
@@ -57,7 +55,7 @@ void setup()
     delay(10);
   }
 
-  Serial.println("Starting!");
+  Serial.println("status;Starting arm base code!");
 
   // Give the driver some time to power up.
   delay(1);
@@ -80,15 +78,16 @@ void setup()
 
   if (sd.verifySettings())
   {
-    Serial.println("Stepper driver passed verification!");
+    Serial.println("status;Stepper driver passed verification!");
     sd.enableDriver();
   }
   else
   {
-    Serial.println("ERROR: Stepper driver failed verification!");
+    Serial.println("status;ERROR: Stepper driver failed verification!");
   }
   // Enable the motor outputs.
 
+  Serial.print("status;");
   Serial.println(sd.readFaults());
 
   delay(1000);
@@ -108,6 +107,7 @@ void setup()
   digitalWrite(m3DirPin, LOW);
   digitalWrite(m3PwmPin, LOW);
 
+  Serial.print("status;");
   Serial.print(encoder1.read());
   Serial.print(", ");
   Serial.print(encoder2.read());
@@ -118,7 +118,7 @@ void setup()
   encoder2.readAndReset();
   encoder3.readAndReset();
 
-  Serial.println("Hi!");
+  Serial.println("status;Arm base setup complete!");
 
   pinMode(29,INPUT);
 }
@@ -132,6 +132,7 @@ unsigned long last_print = 0;
 
 void loop()
 {
+  // TODO: Implement an interrupt based timing loop instead
   if (micros() > last_step + 100)
   {
     if ((steps > target && dir < 0) || (steps < target && dir > 0))
@@ -285,6 +286,7 @@ void loop()
     Serial.println(actuator3Targ);
   }
 
+  // Read the axis 1 homing switch
   int newP29State = digitalRead(29);
   if (newP29State != p29State)
   {
@@ -292,12 +294,4 @@ void loop()
     Serial.print("Pin 29 changed to ");
     Serial.println(p29State ? "HIGH" : "LOW");
   }
-
-  // if (millis() > last_send + 50)
-  // {
-  //   float angle = as5047d.readAngle();
-  //   Serial.println(angle);
-  //   last_send = millis();
-  // }
-  // Read the measured angle
 }
