@@ -44,20 +44,35 @@ int actuator2Targ = 0;
 int actuator3Targ = 0;
 
 int actuatorTolerance = 50;
+Stream* MySerial;
 
 void setup()
 {
 
   Serial.begin(115200);
-  SPI.begin();
-  sd.setChipSelectPin(StepperCSPin);
+  Serial1.begin(115200);
 
-  while (!Serial)
+  while (!Serial && millis() < 10000)
   {
     delay(10);
   }
+ 
+  if(Serial)
+  {
+    Serial.println("Using USB Serial");
+    Serial1.println("Using USB Serial");
+    MySerial = &Serial;
+  }
+  else
+  {
+    Serial1.println("Using Hardware Serial1");
+    MySerial = &Serial1;
+  }
 
-  Serial.println("Starting!");
+  MySerial->println("Starting!");
+
+  SPI.begin();
+  sd.setChipSelectPin(StepperCSPin);
 
   // Give the driver some time to power up.
   delay(1);
@@ -80,16 +95,16 @@ void setup()
 
   if (sd.verifySettings())
   {
-    Serial.println("Stepper driver passed verification!");
+    MySerial->println("Stepper driver passed verification!");
     sd.enableDriver();
   }
   else
   {
-    Serial.println("ERROR: Stepper driver failed verification!");
+    MySerial->println("ERROR: Stepper driver failed verification!");
   }
   // Enable the motor outputs.
 
-  Serial.println(sd.readFaults());
+  MySerial->println(sd.readFaults());
 
   delay(1000);
 
@@ -108,17 +123,17 @@ void setup()
   digitalWrite(m3DirPin, LOW);
   digitalWrite(m3PwmPin, LOW);
 
-  Serial.print(encoder1.read());
-  Serial.print(", ");
-  Serial.print(encoder2.read());
-  Serial.print(", ");
-  Serial.println(encoder3.read());
+  MySerial->print(encoder1.read());
+  MySerial->print(", ");
+  MySerial->print(encoder2.read());
+  MySerial->print(", ");
+  MySerial->println(encoder3.read());
 
   encoder1.readAndReset();
   encoder2.readAndReset();
   encoder3.readAndReset();
 
-  Serial.println("Hi!");
+  MySerial->println("Hi!");
 
   pinMode(29,INPUT);
 }
@@ -145,14 +160,14 @@ void loop()
   if (millis() > last_print+1000)
   {
     last_print = millis();
-    Serial.print("Positions: S=");
-    Serial.print(steps);
-    Serial.print(", 1=");
-    Serial.print(encoder1.read());
-    Serial.print(", 2=");
-    Serial.print(encoder2.read());
-    Serial.print(", 3=");
-    Serial.println(encoder3.read());
+    MySerial->print("Positions: S=");
+    MySerial->print(steps);
+    MySerial->print(", 1=");
+    MySerial->print(encoder1.read());
+    MySerial->print(", 2=");
+    MySerial->print(encoder2.read());
+    MySerial->print(", 3=");
+    MySerial->println(encoder3.read());
   }
 
   if (encoder1.read() > actuator1Targ + actuatorTolerance / 2)
@@ -200,9 +215,9 @@ void loop()
     digitalWrite(m3PwmPin, LOW);
   }
 
-  if (Serial.available() > 1)
+  if (MySerial->available() > 1)
   {
-    String message = Serial.readStringUntil('\n');
+    String message = MySerial->readStringUntil('\n');
     char device = message.charAt(0);
     int value = message.substring(1).toInt();
     if (device == 'S')
@@ -221,8 +236,8 @@ void loop()
         digitalWrite(m2PwmPin, HIGH);
         digitalWrite(m3PwmPin, HIGH);
       }
-      Serial.print("Setting target to ");
-      Serial.println(target);
+      MySerial->print("Setting target to ");
+      MySerial->println(target);
     }
     else if (device >= 'A' && device <= 'C')
     {
@@ -275,28 +290,28 @@ void loop()
       }
     }
 
-    Serial.print("Targets: S=");
-    Serial.print(target);
-    Serial.print(", 1=");
-    Serial.print(actuator1Targ);
-    Serial.print(", 2=");
-    Serial.print(actuator2Targ);
-    Serial.print(", 3=");
-    Serial.println(actuator3Targ);
+    MySerial->print("Targets: S=");
+    MySerial->print(target);
+    MySerial->print(", 1=");
+    MySerial->print(actuator1Targ);
+    MySerial->print(", 2=");
+    MySerial->print(actuator2Targ);
+    MySerial->print(", 3=");
+    MySerial->println(actuator3Targ);
   }
 
   int newP29State = digitalRead(29);
   if (newP29State != p29State)
   {
     p29State = newP29State;
-    Serial.print("Pin 29 changed to ");
-    Serial.println(p29State ? "HIGH" : "LOW");
+    MySerial->print("Pin 29 changed to ");
+    MySerial->println(p29State ? "HIGH" : "LOW");
   }
 
   // if (millis() > last_send + 50)
   // {
   //   float angle = as5047d.readAngle();
-  //   Serial.println(angle);
+  //   MySerial->println(angle);
   //   last_send = millis();
   // }
   // Read the measured angle
