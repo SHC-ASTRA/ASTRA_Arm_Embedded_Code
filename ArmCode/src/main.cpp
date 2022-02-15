@@ -57,6 +57,11 @@ float extension = 0;
 int last_encoder_read = 0;
 int time_last_read = 0;
 float angle = 0;
+int axis_2_max = 15000;
+int axis_2_min = 0;
+float angle_rate = 0;
+float target_rate = 0;
+int speed = 0;
 void calculate_axis_2_extension()
 {
   extension = min_length + dxde*encoder2.read();
@@ -64,6 +69,22 @@ void calculate_axis_2_extension()
 void calculate_angle()
 {
   angle = (180.f / M_PI) * acosf((powf(extension, 2) - (powf(side_a, 2) + powf(side_b, 2))) / (-2*side_a*side_b));
+}
+float last_angle = -1000.0;
+void calculate_angle_rate()
+{
+  angle_rate = (angle - last_angle) / (millis() - time_last_read) * 1000;
+  last_angle = angle;
+}
+int time_last_speed_update = 0;
+void update_actuator_speed()
+{
+  if (abs(angle_rate) < abs(target_rate))
+  {
+    speed = min(speed+1, 255);
+  } else if (abs(angle_rate) > abs(target_rate)) {
+    speed = max(speed - 1, 0);
+  }
 }
 
 
@@ -288,24 +309,51 @@ void monitorActuators()
 {
   calculate_axis_2_extension();
   calculate_angle();
+  if (millis() > time_last_read + 100)
+  {
+    calculate_angle_rate();
+    time_last_read = millis();
+  }
 
-  short speed_test = 255;
-  if (encoder2.read() > actuator2Targ + actuatorTolerance / 2)
+  if (millis() > time_last_speed_update + 10)
+  {
+    update_actuator_speed();
+    time_last_speed_update = millis();
+  }
+
+  if (target_rate < 0)
   {
     digitalWrite(m2DirPin, HIGH);
-    //digitalWrite(m2PwmPin, HIGH);
-    analogWrite(m2PwmPin, speed_test);
-  }
-  else if (encoder2.read() < actuator2Targ - actuatorTolerance / 2)
+  } else if(target_rate > 0) 
   {
     digitalWrite(m2DirPin, LOW);
-    //digitalWrite(m2PwmPin, HIGH);
-    analogWrite(m2PwmPin, speed_test);
   }
-  else
+
+  if (encoder2.read() < axis_2_max || target_rate < 0)
+  {
+    analogWrite(m2PwmPin, speed);
+  } else 
   {
     analogWrite(m2PwmPin, 0);
   }
+
+  // short speed_test = 255;
+  // if (encoder2.read() > actuator2Targ + actuatorTolerance / 2)
+  // {
+  //   digitalWrite(m2DirPin, HIGH);
+  //   //digitalWrite(m2PwmPin, HIGH);
+  //   analogWrite(m2PwmPin, speed_test);
+  // }
+  // else if (encoder2.read() < actuator2Targ - actuatorTolerance / 2)
+  // {
+  //   digitalWrite(m2DirPin, LOW);
+  //   //digitalWrite(m2PwmPin, HIGH);
+  //   analogWrite(m2PwmPin, speed_test);
+  // }
+  // else
+  // {
+  //   analogWrite(m2PwmPin, 0);
+  // }
 
   if (encoder3.read() > actuator3Targ + actuatorTolerance / 2)
   {
@@ -373,12 +421,14 @@ void parseCommand(String command)
     Serial.print(", 2=");
     Serial.print(encoder2.read());
     Serial.print(" "); Serial.print(angle);
+    Serial.print(" "); Serial.print(angle_rate);
+    Serial.print(" "); Serial.print(target_rate);
     Serial.print(", 3=");
     Serial.print(encoder3.read());
     Serial.print(", 4=");
     Serial.println(encoder4.read());
   } else if (exec.equals("reset")) {
-    String actuator = command.substring(exec.length() + 1, command.length()-1);
+    String actuator = command.substring(exec.length() + 1,  command.length()-1);
     if (actuator.equals("2"))
     {
       encoder2.readAndReset();
@@ -393,6 +443,18 @@ void parseCommand(String command)
     {
       encoder4.readAndReset();
       actuator4Targ = 0;
+    }
+  } else if (exec.equals("act_rate"))
+  {
+    int firstComma = command.indexOf(',');
+    String actuator = command.substring(exec.length() + 1, firstComma);
+    String rate_str = command.substring(firstComma + 1);
+
+    float rate = atof(rate_str.c_str());
+
+    if (actuator.equals("2"))
+    {
+      target_rate = rate;
     }
   }
 }
