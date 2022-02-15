@@ -3,6 +3,7 @@
 #include <HighPowerStepperDriver.h>
 #include <Encoder.h>
 
+#pragma region Variable Declarations
 int stepPwmPin = 8;
 int stepDirPin = 9;
 
@@ -42,6 +43,29 @@ int actuator3Targ = 0;
 int actuator4Targ = 0;
 
 int actuatorTolerance = 50;
+#pragma endregion
+
+
+//*******************************
+// Axis 2 Rate of Change
+//*******************************
+static float dxde = 38.1 / 4000.0;
+static float min_length = 317.5;
+static float side_a = 93.0;
+static float side_b = 390.0;
+float extension = 0;
+int last_encoder_read = 0;
+int time_last_read = 0;
+float angle = 0;
+void calculate_axis_2_extension()
+{
+  extension = min_length + dxde*encoder2.read();
+}
+void calculate_angle()
+{
+  angle = (180.f / M_PI) * acosf((powf(extension, 2) - (powf(side_a, 2) + powf(side_b, 2))) / (-2*side_a*side_b));
+}
+
 
 //*******************************
 // Function Declarations
@@ -149,18 +173,18 @@ void loop()
     }
   }
 
-  if (millis() > last_print + 1000)
-  {
-    last_print = millis();
-    Serial.print("Positions: S=");
-    Serial.print(steps);
-    Serial.print(", 1=");
-    Serial.print(encoder2.read());
-    Serial.print(", 2=");
-    Serial.print(encoder3.read());
-    Serial.print(", 3=");
-    Serial.println(encoder4.read());
-  }
+  // if (millis() > last_print + 1000)
+  // {
+  //   last_print = millis();
+  //   Serial.print("Positions: S=");
+  //   Serial.print(steps);
+  //   Serial.print(", 1=");
+  //   Serial.print(encoder2.read());
+  //   Serial.print(", 2=");
+  //   Serial.print(encoder3.read());
+  //   Serial.print(", 3=");
+  //   Serial.println(encoder4.read());
+  // }
 
   monitorActuators();
 
@@ -262,19 +286,25 @@ void loop()
 
 void monitorActuators()
 {
+  calculate_axis_2_extension();
+  calculate_angle();
+
+  short speed_test = 255;
   if (encoder2.read() > actuator2Targ + actuatorTolerance / 2)
   {
     digitalWrite(m2DirPin, HIGH);
-    digitalWrite(m2PwmPin, HIGH);
+    //digitalWrite(m2PwmPin, HIGH);
+    analogWrite(m2PwmPin, speed_test);
   }
   else if (encoder2.read() < actuator2Targ - actuatorTolerance / 2)
   {
     digitalWrite(m2DirPin, LOW);
-    digitalWrite(m2PwmPin, HIGH);
+    //digitalWrite(m2PwmPin, HIGH);
+    analogWrite(m2PwmPin, speed_test);
   }
   else
   {
-    digitalWrite(m2PwmPin, LOW);
+    analogWrite(m2PwmPin, 0);
   }
 
   if (encoder3.read() > actuator3Targ + actuatorTolerance / 2)
@@ -308,7 +338,7 @@ void monitorActuators()
   }
 }
 
-void parse_command(String command)
+void parseCommand(String command)
 {
   String exec = command.substring(0, command.indexOf(';'));
   if (exec.equals("move_actuator"))
@@ -336,5 +366,33 @@ void parse_command(String command)
     String delta_str = command.substring(exec.length() + 1);
 
     int delta = atoi(delta_str.c_str());
+  } else if (exec.equals("read_positions"))
+  {
+    Serial.print("positions; S=");
+    Serial.print(steps);
+    Serial.print(", 2=");
+    Serial.print(encoder2.read());
+    Serial.print(" "); Serial.print(angle);
+    Serial.print(", 3=");
+    Serial.print(encoder3.read());
+    Serial.print(", 4=");
+    Serial.println(encoder4.read());
+  } else if (exec.equals("reset")) {
+    String actuator = command.substring(exec.length() + 1, command.length()-1);
+    if (actuator.equals("2"))
+    {
+      encoder2.readAndReset();
+      actuator2Targ = 0;
+    }
+    else if (actuator.equals("3"))
+    {
+      encoder3.readAndReset();
+      actuator3Targ = 0;
+    }
+    else if (actuator.equals("4"))
+    {
+      encoder4.readAndReset();
+      actuator4Targ = 0;
+    }
   }
 }

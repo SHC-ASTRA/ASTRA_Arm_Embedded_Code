@@ -9,3 +9,8 @@ Actuator Control:
 -actuatorXTarg = the target of the actuator
 -Actuator 2 limits, 0 to 17500
 -Actuator 3 limits, 1000 to 20980 
+
+
+
+Actuator Joint Angle Rate of Change:
+ - 
