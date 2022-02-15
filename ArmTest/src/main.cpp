@@ -52,6 +52,9 @@ void setup()
   Serial.begin(115200);
   Serial1.begin(115200);
 
+  Serial.println("Beginning Setup");
+  Serial1.println("Beginning Setup");
+
   while (!Serial && millis() < 10000)
   {
     delay(10);
