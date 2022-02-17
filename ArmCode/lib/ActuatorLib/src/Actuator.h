@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <CircularBuffer.h>
 #include <Encoder.h>
 
@@ -7,7 +8,7 @@
 #define BUFFER_SIZE 10          // Size of the encoder buffer
 #define BUFFER_TIME_STEP 10     // How often to add to the buffer
 
-#define HOMING_SPEED 128        // Speed to use when homing actuators
+#define HOMING_SPEED 255        // Speed to use when homing actuators
 
 class Actuator
 {

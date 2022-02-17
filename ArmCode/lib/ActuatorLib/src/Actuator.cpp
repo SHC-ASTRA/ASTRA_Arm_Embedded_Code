@@ -22,6 +22,7 @@ void Actuator::Initalize()
         // Initialize Control Pins
         pinMode(pwmPin, OUTPUT);
         pinMode(dirPin, OUTPUT);
+
         SetSpeed(0);
         SetDirection(EXTEND);
 
@@ -105,11 +106,11 @@ void Actuator::Home(bool retract)
         int step = encoder->read();
         SetSpeed(HOMING_SPEED);
 
-        // Check every 100ms whether the actuator has moved
+        // Check every 1000ms whether the actuator has moved
         // If not, break out of the loop
         do
         {
-                delay(100);
+                delay(1000);
                 int nextStep = encoder->read();
 
                 if (nextStep == step)

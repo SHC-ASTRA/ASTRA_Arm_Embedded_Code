@@ -35,8 +35,11 @@ void setup()
    
     MySerial->println("status;Starting Arm Base Teensy!");
 
-    MySerial->println("status;Initializing Axis 2");
+    MySerial->println("status;Initializing Axis 2.");
     Axis2.Initalize();
+    MySerial->println("status;Axis 2 Initalized, beginning homing sequence.");
+    Axis2.Home();
+    MySerial->println("status;Axis 2 finished Homing Sequence.");
 
 }
 
