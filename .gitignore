@@ -30,5 +30,5 @@
 *.exe
 *.out
 *.app
-ArmTest/.vscode/extensions.json
-ArmCode/.vscode/extensions.json
+ArmTest/.vscode/*
+ArmCode/.vscode/*
