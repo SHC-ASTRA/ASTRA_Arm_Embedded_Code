@@ -1,0 +1,16 @@
+Commands:
+-move_stepper delta
+-move_actuator actuator delta
+-read_actuator
+
+Actuator Control:
+-analogWrite will control speed (0 = off, 255 = full speed)
+-Some sort of proportional control would be useful
+-actuatorXTarg = the target of the actuator
+-Actuator 2 limits, 0 to 17500
+-Actuator 3 limits, 1000 to 20980 
+
+
+
+Actuator Joint Angle Rate of Change:
+ - 
