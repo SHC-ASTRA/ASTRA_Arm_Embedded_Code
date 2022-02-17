@@ -75,8 +75,11 @@ class Actuator
         void Initalize();
 
         // Target Based Control
+        // This function extends or retracts the actuator by a number of steps. Negative steps retract the actuator.
         void Extend(int steps);
+        // This function enables the target control loop to get the actuator to the target step.
         void SetTarget(int target);
+        // This function enables the rate control loop to move the joint at the desired rate.
         void SetTargetRate(float rate);
         // This function blocks the program until the actuator reaches the desired target step.
         void WaitForTarget();
@@ -89,6 +92,8 @@ class Actuator
         void Update();
 
         // Getter Functions
+
+        // This function checks whether the control loop is idle.
         bool IsActive() { return controlMode != idle; }
 
         float GetAngle() { return angle; }

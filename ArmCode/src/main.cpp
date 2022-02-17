@@ -47,7 +47,7 @@ void setup()
     MySerial->println("status;Initializing Axis 2.");
     Axis2.Initalize();          MySerial->println("status;Axis 2 Initalized, beginning homing sequence.");
     Axis2.Home();               MySerial->println("status;Axis 2 finished Homing Sequence.");
-    Axis2.SetTarget(10500);         MySerial->println("status;Axis 2 Target set for 10500.");
+    Axis2.SetTarget(10500);     MySerial->println("status;Axis 2 Target set for 10500.");
     Axis2.WaitForTarget();      MySerial->println("status;Axis 2 reached Target.");
 
     MySerial->println("status;Initializing Axis 3.");
@@ -62,9 +62,19 @@ bool toggle = false;
 
 void loop()
 {
+    /*
+    Axis2.SetTarget(steps); - This function moves the actuator to the specified step.
+    Axis2.Extend(steps); - This function extends the actuator by the specified steps. Negative steps = retract.
+    Axis2.SetTargetRate(rate); - This function tells the actuator to match the specified rate in degrees per second. (positive = extend, negative = retract)
+    Axis2.GetAngle(); - This function returns the angle the joint is at
+    */
+
+    // These functions update the control loops, need to run as frequently as possible.
     Axis2.Update();
     Axis3.Update();
 
+    // Sample Debugging Script
+    // Prints out actuator stats while a control loop is active
     if(Axis2.IsActive() && (millis() - lastTime) > 10)
     {
         MySerial->printf("status;Axis 2: %d, %d, %d, %d, %f, %f, %f\n", 
