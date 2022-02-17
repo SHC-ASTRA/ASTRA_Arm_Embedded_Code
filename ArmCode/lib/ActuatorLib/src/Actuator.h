@@ -9,6 +9,8 @@
 
 #define HOMING_SPEED 128        // Speed to use when homing actuators
 
+enum ControlMode {target, rateOfChange};
+
 class Actuator
 {
     private:
@@ -32,6 +34,9 @@ class Actuator
         float sideALength;
         float sideBLength;
         float extension; // Calculated extension of the actuator
+
+        // Control Variables
+        bool 
 
         // Actuator Speed Tracking
         CircularBuffer<int, BUFFER_SIZE> encoderBuffer;

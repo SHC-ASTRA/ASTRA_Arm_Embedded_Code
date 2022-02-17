@@ -46,10 +46,13 @@ void Actuator::Update()
 {
         if (BufferReadyForUpdate())
         {
-                
+                // Add to buffer
+                // Recalculate extension and angle
+                // Recalculate rate of change
         }
+
         // Check state
-        // If target mode, then 
+        // If target mode, then step in the direction that's towards the target
 }
 
 void Actuator::Home(bool retract)
