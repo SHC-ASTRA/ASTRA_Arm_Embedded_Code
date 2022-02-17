@@ -36,14 +36,14 @@ class Actuator
         float extension; // Calculated extension of the actuator
 
         // Control Variables
-        bool 
+        ControlMode controlMode;
 
         // Actuator Speed Tracking
         CircularBuffer<int, BUFFER_SIZE> encoderBuffer;
         CircularBuffer<int, BUFFER_SIZE> timingBuffer;
 
         void ResetBuffers(); // Safely resets the buffers
-        bool BufferReadyForUpdate() { return millis() > timingBuffer.first() + BUFFER_TIME_STEP; }
+        bool BufferReadyForUpdate() { return millis() > (u_int32_t)(timingBuffer.first()) + BUFFER_TIME_STEP; }
 
         // Helper Functions to Control the Actuator
         void SetSpeed(short speed) { analogWrite(pwmPin, speed); }
