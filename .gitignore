@@ -31,3 +31,4 @@
 *.out
 *.app
 ArmTest/.vscode/extensions.json
+ArmCode/.vscode/extensions.json
