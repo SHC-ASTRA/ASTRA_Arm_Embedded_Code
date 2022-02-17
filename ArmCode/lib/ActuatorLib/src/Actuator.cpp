@@ -153,5 +153,12 @@ void Actuator::Extend(int steps)
 {
         controlMode = target;
         targetInitialStep = encoder->read();
-        actuatorTarget = min(upperLimit, targetInitialStep + steps);
+        actuatorTarget = max(lowerLimit, min(upperLimit, targetInitialStep + steps));
+}
+
+void Actuator::SetTarget(int step)
+{
+        controlMode = target;
+        targetInitialStep = encoder->read();
+        actuatorTarget = max(lowerLimit, min(upperLimit, step));
 }

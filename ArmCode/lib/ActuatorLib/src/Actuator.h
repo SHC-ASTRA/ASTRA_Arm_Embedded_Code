@@ -74,7 +74,7 @@ class Actuator
 
         // Target Based Control
         void Extend(int steps);
-        void Retract(int steps);
+        void SetTarget(int target);
 
         // This function homes the actuator
         // This function is blocking
