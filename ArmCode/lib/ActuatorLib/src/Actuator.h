@@ -26,6 +26,10 @@ class Actuator
         int lowerLimit;
         int upperLimit;
 
+        // Actuator Status Variables
+        short actuatorSpeed;
+        short actuatorDirection;
+
         // Variables to calculate the arm angle
         float dxde; // change in extension per encoder step
         float baseLength; // Length of actuator
@@ -49,13 +53,13 @@ class Actuator
         void AddToBuffer();
 
         // Helper Functions to Control the Actuator
-        void SetSpeed(short speed) { analogWrite(pwmPin, speed); }
-        void SetDirection(short direction) { digitalWrite(dirPin, direction); }
+        void SetSpeed(short speed) { analogWrite(pwmPin, speed); actuatorSpeed = speed; }
+        void SetDirection(short direction) { digitalWrite(dirPin, direction); actuatorDirection = direction; }
 
         // Actuator Kinematics Functions
-        void calculateExtension();
-        void calculateAngle();
-        void calculateAngularRate();
+        float CalculateExtension(int encoderReading);
+        float CalculateAngle(float actuatorExtension);
+        void CalculateAngularRate();
 
         // Control Loop
         void Update();
@@ -75,4 +79,11 @@ class Actuator
         // This function homes the actuator
         // This function is blocking
         void Home(bool retract=true);
+
+        // Getter Functions
+        bool IsActive() { return actuatorSpeed != 0; }
+
+        float GetExtension() { return extension; }
+        float GetAngle() { return angle; }
+        float GetAngularRate() { return angularRateOfChange; }
 };

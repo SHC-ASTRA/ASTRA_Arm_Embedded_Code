@@ -47,13 +47,39 @@ void Actuator::AddToBuffer()
         timingBuffer.unshift(millis());
 }
 
+float Actuator::CalculateExtension(int encoderReading)
+{
+        return baseLength + dxde * encoderReading;
+}
+
+float Actuator::CalculateAngle(float actuatorExtension)
+{
+        return (180.f / M_PI) * acosf((powf(actuatorExtension, 2) - (powf(sideALength, 2) + powf(sideBLength, 2))) / (-2*sideALength*sideBLength));
+}
+
+void Actuator::CalculateAngularRate()
+{
+        int dT = timingBuffer.first() - timingBuffer.last();
+        
+        float oldAngle = CalculateAngle(
+                CalculateExtension(encoderBuffer.last())
+        );
+
+        angularRateOfChange = (angle - oldAngle) / (dT) * 1000.0;
+}
+
 void Actuator::Update()
 {
         if (BufferReadyForUpdate())
         {
                 AddToBuffer();
+
                 // Recalculate extension and angle
+                extension = CalculateExtension(encoderBuffer.first());
+                angle = CalculateAngle(extension);
+
                 // Recalculate rate of change
+                CalculateAngularRate();
         }
 
         // Check state
