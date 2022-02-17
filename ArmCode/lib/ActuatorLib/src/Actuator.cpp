@@ -31,6 +31,8 @@ void Actuator::Initalize()
         encoder->readAndReset();
 
         ResetBuffers();
+
+        controlMode = idle;
 }
 
 void Actuator::ResetBuffers()
@@ -87,7 +89,27 @@ void Actuator::Update()
         // If target mode, then step in the direction that's towards the target
         if (controlMode == target)
         {
+                int step = encoder->read();
+                
+                if (step == actuatorTarget)
+                {
+                        actuatorTarget = 0;
+                        targetInitialStep = 0;
+                        controlMode = idle;
+                        SetSpeed(0);
+                        return;
+                }
 
+                // Quadratic Formula allows for the actuator to ease in to approaching the target
+                int ease = -((step - targetInitialStep)*(step - actuatorTarget)) / abs(actuatorTarget - targetInitialStep);
+                int speed = min(255, abs(ease) + 100); 
+
+                SetSpeed(speed);
+                if (actuatorTarget < targetInitialStep)
+                        SetDirection(RETRACT);
+                else
+                        SetDirection(EXTEND);
+                        
         } else if (controlMode == rateOfChange)
         {
 
@@ -125,4 +147,11 @@ void Actuator::Home(bool retract)
         // Reset encoder and buffers
         encoder->readAndReset();
         ResetBuffers();
+}
+
+void Actuator::Extend(int steps)
+{
+        controlMode = target;
+        targetInitialStep = encoder->read();
+        actuatorTarget = min(upperLimit, targetInitialStep + steps);
 }

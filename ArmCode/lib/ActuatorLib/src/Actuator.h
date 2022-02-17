@@ -8,7 +8,7 @@
 #define BUFFER_SIZE 10          // Size of the encoder buffer
 #define BUFFER_TIME_STEP 10     // How often to add to the buffer
 
-#define HOMING_SPEED 255        // Speed to use when homing actuators
+#define HOMING_SPEED 128        // Speed to use when homing actuators
 
 class Actuator
 {
@@ -41,7 +41,9 @@ class Actuator
         float angularRateOfChange; // Calculated angularRateOfChange
 
         // Control Variables
-        enum ControlMode {target, rateOfChange};
+        int actuatorTarget = 0;
+        int targetInitialStep = 0;
+        enum ControlMode {target, rateOfChange, idle};
         ControlMode controlMode;
 
         // Actuator Speed Tracking
@@ -62,9 +64,6 @@ class Actuator
         float CalculateAngle(float actuatorExtension);
         void CalculateAngularRate();
 
-        // Control Loop
-        void Update();
-
     public:
         Actuator(int pwmPin, int dirPin, int encoderPinA,
         int encoderPinB, int lowerLimit, int upperLimit,
@@ -81,10 +80,17 @@ class Actuator
         // This function is blocking
         void Home(bool retract=true);
 
-        // Getter Functions
-        bool IsActive() { return actuatorSpeed != 0; }
+        // Control Loop
+        void Update();
 
-        float GetExtension() { return extension; }
+        // Getter Functions
+        bool IsActive() { return controlMode != idle; }
+
         float GetAngle() { return angle; }
         float GetAngularRate() { return angularRateOfChange; }
+        int GetDirection () { return actuatorDirection; }
+        float GetExtension() { return extension; }
+        int GetSpeed() { return actuatorSpeed; }
+        int GetStep() { return encoder->read(); }
+        int GetTarget() { return actuatorTarget; }
 };
