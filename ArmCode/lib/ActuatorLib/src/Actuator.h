@@ -43,7 +43,7 @@ class Actuator
         CircularBuffer<int, BUFFER_SIZE> encoderBuffer;
         CircularBuffer<int, BUFFER_SIZE> timingBuffer;
 
-        // Buffer helper functions
+        // Buffer Helper Functions
         void ResetBuffers();
         bool BufferReadyForUpdate() { return millis() > (u_int32_t)(timingBuffer.first()) + BUFFER_TIME_STEP; }
         void AddToBuffer();
@@ -51,6 +51,11 @@ class Actuator
         // Helper Functions to Control the Actuator
         void SetSpeed(short speed) { analogWrite(pwmPin, speed); }
         void SetDirection(short direction) { digitalWrite(dirPin, direction); }
+
+        // Actuator Kinematics Functions
+        void calculateExtension();
+        void calculateAngle();
+        void calculateAngularRate();
 
         // Control Loop
         void Update();
