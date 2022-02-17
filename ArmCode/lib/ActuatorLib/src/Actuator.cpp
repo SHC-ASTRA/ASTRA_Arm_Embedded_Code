@@ -44,6 +44,10 @@ void Actuator::ResetBuffers()
 
 void Actuator::Update()
 {
+        if (BufferReadyForUpdate())
+        {
+                
+        }
         // Check state
         // If target mode, then 
 }
