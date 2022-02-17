@@ -4,12 +4,10 @@
 #define EXTEND LOW
 #define RETRACT HIGH
 
-#define BUFFER_SIZE 50          // Size of the encoder buffer
+#define BUFFER_SIZE 10          // Size of the encoder buffer
 #define BUFFER_TIME_STEP 10     // How often to add to the buffer
 
 #define HOMING_SPEED 128        // Speed to use when homing actuators
-
-enum ControlMode {target, rateOfChange};
 
 class Actuator
 {
@@ -34,16 +32,21 @@ class Actuator
         float sideALength;
         float sideBLength;
         float extension; // Calculated extension of the actuator
+        float angle; // Calculated angle of the joint
+        float angularRateOfChange; // Calculated angularRateOfChange
 
         // Control Variables
+        enum ControlMode {target, rateOfChange};
         ControlMode controlMode;
 
         // Actuator Speed Tracking
         CircularBuffer<int, BUFFER_SIZE> encoderBuffer;
         CircularBuffer<int, BUFFER_SIZE> timingBuffer;
 
-        void ResetBuffers(); // Safely resets the buffers
+        // Buffer helper functions
+        void ResetBuffers();
         bool BufferReadyForUpdate() { return millis() > (u_int32_t)(timingBuffer.first()) + BUFFER_TIME_STEP; }
+        void AddToBuffer();
 
         // Helper Functions to Control the Actuator
         void SetSpeed(short speed) { analogWrite(pwmPin, speed); }

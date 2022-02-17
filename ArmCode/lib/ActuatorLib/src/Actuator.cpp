@@ -38,6 +38,11 @@ void Actuator::ResetBuffers()
         encoderBuffer.clear();
         timingBuffer.clear();
 
+        AddToBuffer();
+}
+
+void Actuator::AddToBuffer()
+{
         encoderBuffer.unshift(encoder->read());
         timingBuffer.unshift(millis());
 }
@@ -46,13 +51,20 @@ void Actuator::Update()
 {
         if (BufferReadyForUpdate())
         {
-                // Add to buffer
+                AddToBuffer();
                 // Recalculate extension and angle
                 // Recalculate rate of change
         }
 
         // Check state
         // If target mode, then step in the direction that's towards the target
+        if (controlMode == target)
+        {
+
+        } else if (controlMode == rateOfChange)
+        {
+
+        }
 }
 
 void Actuator::Home(bool retract)
