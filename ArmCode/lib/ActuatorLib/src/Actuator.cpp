@@ -106,11 +106,11 @@ void Actuator::Home(bool retract)
         int step = encoder->read();
         SetSpeed(HOMING_SPEED);
 
-        // Check every 1000ms whether the actuator has moved
+        // Check every 100ms whether the actuator has moved
         // If not, break out of the loop
         do
         {
-                delay(1000);
+                delay(100);
                 int nextStep = encoder->read();
 
                 if (nextStep == step)
