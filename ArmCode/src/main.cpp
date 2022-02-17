@@ -7,12 +7,12 @@ Stream* MySerial;
 Actuator Axis2(18, 19, 22, 23,          // PIns
                 0, 15000,               // Lower and Upper Limits
                 318.3, 93.0, 390.0,     // Length of: Actuator Fully Retracted, Side A, Side B
-                1 / 102.4);             // change in extension / change in encoder steps
+                1 / 102.4);             // change in extension (mm) / change in encoder steps
 
 Actuator Axis3(14, 15, 40, 41,          // Pins
                 -20980+1000, 0,         // Lower and Upper Limits (Since Axis3 homes to extend, the range of travel is treated as negative)
                 318.3, 138.0, 444.5,    // Length of: Actuator Fully Extended, Side A, Side B
-                1 / 102.4);             // change in extension / change in encoder steps
+                1 / 102.4);             // change in extension (mm) / change in encoder steps
 
 
 void setup()
