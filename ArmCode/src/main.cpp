@@ -4,7 +4,15 @@
 Stream* MySerial;
 
 // Linear Actuator Declarations
-Actuator Axis2(18, 19, 22, 23, 0, 17000, 317.5, 93.0, 390.0, 38.1/4000.0);
+Actuator Axis2(18, 19, 22, 23,          // PIns
+                0, 15000,               // Lower and Upper Limits
+                318.3, 93.0, 390.0,     // Length of: Actuator Fully Retracted, Side A, Side B
+                1 / 102.4);             // change in extension / change in encoder steps
+
+Actuator Axis3(14, 15, 40, 41,          // Pins
+                -20980+1000, 0,         // Lower and Upper Limits (Since Axis3 homes to extend, the range of travel is treated as negative)
+                318.3, 138.0, 444.5,    // Length of: Actuator Fully Extended, Side A, Side B
+                1 / 102.4);             // change in extension / change in encoder steps
 
 
 void setup()
@@ -37,12 +45,16 @@ void setup()
     MySerial->println("status;Starting Arm Base Teensy!");
 
     MySerial->println("status;Initializing Axis 2.");
-    Axis2.Initalize();
-    MySerial->println("status;Axis 2 Initalized, beginning homing sequence.");
-    Axis2.Home();
-    MySerial->println("status;Axis 2 finished Homing Sequence.");
-    Axis2.Extend(7500);
-    MySerial->println("status;Axis 2 Target set for 7500.");
+    Axis2.Initalize();          MySerial->println("status;Axis 2 Initalized, beginning homing sequence.");
+    Axis2.Home();               MySerial->println("status;Axis 2 finished Homing Sequence.");
+    Axis2.SetTarget(10500);         MySerial->println("status;Axis 2 Target set for 10500.");
+    Axis2.WaitForTarget();      MySerial->println("status;Axis 2 reached Target.");
+
+    MySerial->println("status;Initializing Axis 3.");
+    Axis3.Initalize();          MySerial->println("status;Axis 3 Initalized, beginning homing sequence.");
+    Axis3.Home(false);          MySerial->println("status;Axis 3 finished Homing Sequence.");
+    Axis3.SetTarget(-17500);    MySerial->println("status;Axis 3 Target set for -17500.");
+    Axis3.WaitForTarget();      MySerial->println("status;Axis 3 reached Target.");
 }
 
 int lastTime = 0;
@@ -51,12 +63,13 @@ bool toggle = false;
 void loop()
 {
     Axis2.Update();
+    Axis3.Update();
 
-    if(Axis2.IsActive() && (millis() - lastTime) > 250)
+    if(Axis2.IsActive() && (millis() - lastTime) > 10)
     {
-        MySerial->printf("status;Axis 2: %d, %d, %d, %d, %f, %f\n", 
+        MySerial->printf("status;Axis 2: %d, %d, %d, %d, %f, %f, %f\n", 
         Axis2.GetSpeed(), Axis2.GetDirection(), Axis2.GetStep(), Axis2.GetTarget(),
-        Axis2.GetAngle(), Axis2.GetAngularRate());
+        Axis2.GetAngle(), Axis2.GetAngularRate(), Axis2.GetTargetRate());
         lastTime = millis();
     }
 }

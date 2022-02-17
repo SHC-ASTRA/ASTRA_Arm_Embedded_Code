@@ -5,11 +5,12 @@
 #define EXTEND LOW
 #define RETRACT HIGH
 
-#define BUFFER_SIZE 10          // Size of the encoder buffer
-#define BUFFER_TIME_STEP 10     // How often to add to the buffer
+#define BUFFER_SIZE 10              // Size of the encoder buffer
+#define BUFFER_TIME_STEP 10         // How often to add to the buffer
 
-#define HOMING_SPEED 128        // Speed to use when homing actuators
+#define HOMING_SPEED 200            // Speed to use when homing actuators
 
+#define ROC_CONTROL_TOLERANCE 0.15  // Degrees/second of toelrance to the rate of change
 class Actuator
 {
     private:
@@ -19,7 +20,7 @@ class Actuator
 
         // Pins to connect to the encoder
         int encoderPinA;
-        int encoderPinB;
+        int encoderPinB; 
         Encoder* encoder;
 
         // Safety limits on the actuators
@@ -41,8 +42,9 @@ class Actuator
         float angularRateOfChange; // Calculated angularRateOfChange
 
         // Control Variables
-        int actuatorTarget = 0;
-        int targetInitialStep = 0;
+        int actuatorTarget;
+        int targetInitialStep;
+        float targetRate;
         enum ControlMode {target, rateOfChange, idle};
         ControlMode controlMode;
 
@@ -75,6 +77,9 @@ class Actuator
         // Target Based Control
         void Extend(int steps);
         void SetTarget(int target);
+        void SetTargetRate(float rate);
+        // This function blocks the program until the actuator reaches the desired target step.
+        void WaitForTarget();
 
         // This function homes the actuator
         // This function is blocking
@@ -93,4 +98,5 @@ class Actuator
         int GetSpeed() { return actuatorSpeed; }
         int GetStep() { return encoder->read(); }
         int GetTarget() { return actuatorTarget; }
+        float GetTargetRate() { return targetRate; }
 };

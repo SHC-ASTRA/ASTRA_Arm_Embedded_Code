@@ -73,6 +73,7 @@ void Actuator::CalculateAngularRate()
 
 void Actuator::Update()
 {
+        bool newRateOfChange = false;
         if (BufferReadyForUpdate())
         {
                 AddToBuffer();
@@ -83,6 +84,8 @@ void Actuator::Update()
 
                 // Recalculate rate of change
                 CalculateAngularRate();
+
+                newRateOfChange = true;
         }
 
         // Check state
@@ -112,7 +115,28 @@ void Actuator::Update()
                         
         } else if (controlMode == rateOfChange)
         {
+                int step = encoder->read();
+                if ((step >= upperLimit && actuatorDirection == EXTEND) || (step <= lowerLimit && actuatorDirection == RETRACT))
+                {
+                        controlMode = idle;
+                        SetSpeed(0);
+                        return;
+                }
 
+                if (newRateOfChange)
+                {
+                        int speed = actuatorSpeed;
+
+                        if (abs(angularRateOfChange) + ROC_CONTROL_TOLERANCE < abs(targetRate))
+                        {
+                                speed = min(speed+1, 255); 
+                        } else if (abs(angularRateOfChange) - ROC_CONTROL_TOLERANCE > abs(targetRate))
+                        {
+                                speed = max(speed-1, 0);
+                        }
+
+                        SetSpeed(speed);
+                }
         }
 }
 
@@ -161,4 +185,24 @@ void Actuator::SetTarget(int step)
         controlMode = target;
         targetInitialStep = encoder->read();
         actuatorTarget = max(lowerLimit, min(upperLimit, step));
+}
+
+void Actuator::SetTargetRate(float rate)
+{
+        controlMode = rateOfChange;
+        targetRate = rate;
+
+        if (targetRate < 0)
+                SetDirection(RETRACT);
+        if (targetRate > 0)
+                SetDirection(EXTEND);
+        
+}
+
+void Actuator::WaitForTarget()
+{
+        while (IsActive())
+        {
+                Update();
+        }
 }
