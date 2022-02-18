@@ -46,6 +46,13 @@ void setup()
 
     MySerial->println("status;Initializing Axis 2.");
     Axis2.Initalize();          MySerial->println("status;Axis 2 Initalized, beginning homing sequence.");
+
+    while (Axis2.IsEStopActive())
+    {
+        MySerial->println("status;EStop detected... trying again in 1 second.");
+        delay(1000);
+    }
+
     Axis2.Home();               MySerial->println("status;Axis 2 finished Homing Sequence.");
     Axis2.SetTarget(10500);     MySerial->println("status;Axis 2 Target set for 10500.");
     Axis2.WaitForTarget();      MySerial->println("status;Axis 2 reached Target.");

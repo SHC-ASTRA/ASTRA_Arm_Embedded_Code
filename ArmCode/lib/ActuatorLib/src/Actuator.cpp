@@ -173,6 +173,28 @@ void Actuator::Home(bool retract)
         ResetBuffers();
 }
 
+bool Actuator::IsEStopActive()
+{
+        int step = encoder->read();
+        SetDirection(EXTEND);
+        SetSpeed(HOMING_SPEED);
+        delay(10);
+        SetSpeed(0);
+        int stepAfter = encoder->read();
+
+        if (step != stepAfter)
+                return false;
+        
+        step = encoder->read();
+        SetDirection(RETRACT);
+        SetSpeed(HOMING_SPEED);
+        delay(10);
+        SetSpeed(0);
+        stepAfter = encoder->read();
+
+        return step == stepAfter;
+}
+
 void Actuator::Extend(int steps)
 {
         controlMode = target;
