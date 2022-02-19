@@ -218,7 +218,9 @@ void Actuator::SetTargetRate(float rate)
         if (targetRate < 0)
                 SetDirection(RETRACT);
         if (targetRate > 0)
-                SetDirection(EXTEND);
+                SetDirection(EXTEND);        
+        if (targetRate == 0)
+                controlMode = idle;
         
 }
 
