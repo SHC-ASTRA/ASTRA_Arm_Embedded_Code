@@ -1,7 +1,12 @@
 #include <Actuator.h>
+#include <Stepper.h>
 
 // Global Variables
 Stream* MySerial;
+
+// Stepper Declaration
+Stepper Axis1(10,29,                    // Pins
+              -270,270);                // Lower and Upper Limits
 
 // Linear Actuator Declarations
 Actuator Axis2(18, 19, 22, 23,          // PIns

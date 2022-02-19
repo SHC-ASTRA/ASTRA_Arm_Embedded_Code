@@ -24,8 +24,7 @@ class Stepper
         HighPowerStepperDriver sd;
 
     public:
-        Stepper(int pwmPin, int dirPin, 
-                int chipSelectPin, int homeSwitchPin,
+        Stepper(int chipSelectPin, int homeSwitchPin,
                 int lowerLimit, int upperLimit);
 
         bool Initialize();

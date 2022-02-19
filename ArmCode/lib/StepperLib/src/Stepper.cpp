@@ -1,11 +1,8 @@
 #include "Stepper.h"
 
-Stepper::Stepper(int pwmPin, int dirPin,
-    int chipSelectPin, int homeSwitchPin,
+Stepper::Stepper(int chipSelectPin, int homeSwitchPin,
     int lowerLimit, int upperLimit)
 {
-    this->pwmPin = pwmPin;
-    this->dirPin = dirPin;
     this->chipSelectPin = chipSelectPin;
     this->homeSwitchPin = homeSwitchPin;
     this->lowerLimit = lowerLimit;
