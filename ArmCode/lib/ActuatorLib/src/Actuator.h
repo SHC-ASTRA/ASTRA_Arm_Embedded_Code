@@ -88,6 +88,9 @@ class Actuator
         // This function is blocking
         void Home(bool retract=true);
 
+        // This function checks whether the E-Stop is activated
+        bool IsEStopActive();
+
         // Control Loop
         void Update();
 
