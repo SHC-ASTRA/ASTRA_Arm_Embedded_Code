@@ -40,6 +40,7 @@ class Actuator
         float extension; // Calculated extension of the actuator
         float angle; // Calculated angle of the joint
         float angularRateOfChange; // Calculated angularRateOfChange
+        float worldTransformAngle; // Angle to transform calculated angle to world angle
 
         // Control Variables
         int actuatorTarget;
@@ -70,7 +71,7 @@ class Actuator
         Actuator(int pwmPin, int dirPin, int encoderPinA,
         int encoderPinB, int lowerLimit, int upperLimit,
         float baseLength, float sideALength, float sideBLength, 
-        float dxde);
+        float dxde, float worldTransformAngle);
 
         void Initalize();
 
@@ -100,6 +101,7 @@ class Actuator
         bool IsActive() { return controlMode != idle; }
 
         float GetAngle() { return angle; }
+        float GetWorldAngle() { return GetAngle() + worldTransformAngle; }
         float GetAngularRate() { return angularRateOfChange; }
         int GetDirection () { return actuatorDirection; }
         float GetExtension() { return extension; }

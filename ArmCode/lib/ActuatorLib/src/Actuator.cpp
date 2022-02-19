@@ -3,7 +3,7 @@
 Actuator::Actuator(int pwmPin, int dirPin, int encoderPinA,
         int encoderPinB, int lowerLimit, int upperLimit,
         float baseLength, float sideALength, float sideBLength, 
-        float dxde)
+        float dxde, float worldTransformAngle)
 {
         this->pwmPin = pwmPin;
         this->dirPin = dirPin;
@@ -15,6 +15,7 @@ Actuator::Actuator(int pwmPin, int dirPin, int encoderPinA,
         this->sideALength = sideALength;
         this->sideBLength = sideBLength;
         this->dxde = dxde;
+        this->worldTransformAngle = worldTransformAngle;
 }
 
 void Actuator::Initalize()
