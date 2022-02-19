@@ -54,7 +54,7 @@ void Actuator::AddToBuffer()
 void Actuator::SetSignedSpeed(short speed)
 {
         SetSpeed(abs(speed));
-        SetDirection(speed>0?0:1);
+        SetDirection(speed>0?EXTEND:RETRACT);
 }
 
 float Actuator::CalculateExtension(int encoderReading)
