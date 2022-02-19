@@ -144,14 +144,12 @@ void Actuator::Update()
                 {
                         int signedSpeed = (actuatorDirection==EXTEND?1:-1)*actuatorSpeed;
 
-                        if (angularRateOfChange < targetRate)
-                        {
-                                signedSpeed = min(signedSpeed+1, 255); 
-                        } else if (angularRateOfChange > targetRate)
-                        {
-                                signedSpeed = max(signedSpeed-1, -255);
-                        }
+                        int KP = 3;
 
+                        int error = targetRate - angularRateOfChange;
+                        signedSpeed = signedSpeed + KP*error;
+
+                        signedSpeed = max(min(signedSpeed,255),-255);
                         SetSignedSpeed(signedSpeed);
                 }
         }
