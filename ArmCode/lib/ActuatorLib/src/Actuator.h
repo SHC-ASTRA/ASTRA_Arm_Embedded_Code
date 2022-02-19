@@ -61,6 +61,7 @@ class Actuator
         // Helper Functions to Control the Actuator
         void SetSpeed(short speed) { analogWrite(pwmPin, speed); actuatorSpeed = speed; }
         void SetDirection(short direction) { digitalWrite(dirPin, direction); actuatorDirection = direction; }
+        void SetSignedSpeed(short speed);
 
         // Actuator Kinematics Functions
         float CalculateExtension(int encoderReading);

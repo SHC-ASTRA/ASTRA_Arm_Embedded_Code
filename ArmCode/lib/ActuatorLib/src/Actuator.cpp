@@ -51,6 +51,12 @@ void Actuator::AddToBuffer()
         timingBuffer.unshift(millis());
 }
 
+void Actuator::SetSignedSpeed(short speed)
+{
+        SetSpeed(abs(speed));
+        SetDirection(speed>0?0:1);
+}
+
 float Actuator::CalculateExtension(int encoderReading)
 {
         return baseLength + dxde * encoderReading;
@@ -121,22 +127,32 @@ void Actuator::Update()
                 {
                         controlMode = idle;
                         SetSpeed(0);
+                        
+                        if(step >= upperLimit)
+                        {
+                                SetDirection(RETRACT);
+                        }
+                        else
+                        {
+                                SetDirection(EXTEND);
+                        }
+
                         return;
                 }
 
                 if (newRateOfChange)
                 {
-                        int speed = actuatorSpeed;
+                        int signedSpeed = (actuatorDirection==EXTEND?1:-1)*actuatorSpeed;
 
-                        if (abs(angularRateOfChange) + ROC_CONTROL_TOLERANCE < abs(targetRate))
+                        if (angularRateOfChange < targetRate)
                         {
-                                speed = min(speed+1, 255); 
-                        } else if (abs(angularRateOfChange) - ROC_CONTROL_TOLERANCE > abs(targetRate))
+                                signedSpeed = min(signedSpeed+1, 255); 
+                        } else if (angularRateOfChange > targetRate)
                         {
-                                speed = max(speed-1, 0);
+                                signedSpeed = max(signedSpeed-1, -255);
                         }
 
-                        SetSpeed(speed);
+                        SetSignedSpeed(signedSpeed);
                 }
         }
 }
@@ -215,10 +231,10 @@ void Actuator::SetTargetRate(float rate)
         controlMode = rateOfChange;
         targetRate = rate;
 
-        if (targetRate < 0)
-                SetDirection(RETRACT);
-        if (targetRate > 0)
-                SetDirection(EXTEND);        
+        // if (targetRate < 0)
+        //         SetDirection(RETRACT);
+        // if (targetRate > 0)
+        //         SetDirection(EXTEND);        
         if (targetRate == 0)
         {
                 controlMode = idle;

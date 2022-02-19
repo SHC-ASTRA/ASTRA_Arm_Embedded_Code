@@ -10,7 +10,7 @@ Stepper Axis1(10,29,                    // Pins
 
 // Linear Actuator Declarations
 Actuator Axis2(18, 19, 22, 23,          // PIns
-                0, 17500,               // Lower and Upper Limits
+                0, 16000,               // Lower and Upper Limits
                 318.3, 90.0, 400.0,     // Length of: Actuator Fully Retracted, Side A, Side B
                 1 / 102.4,              // change in extension (mm) / change in encoder steps
                 -55.9);                 // Angle to transform calcualated angle to world angle
