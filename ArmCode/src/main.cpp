@@ -93,12 +93,12 @@ void loop()
     {
         if (Axis2.IsActive())
         {
-            MySerial->printf("status; 2: %f, %f, %f, %f\n",
+            MySerial->printf("feedback; 2: %f, %f, %f, %f\n",
                              Axis2.GetWorldAngle(), Axis2.GetAngularRate(), Axis2.GetTargetRate(), Axis2.GetExtension());
         }
         if (Axis3.IsActive())
         {
-            MySerial->printf("status; 3: %f, %f, %f, %f\n",
+            MySerial->printf("feedback; 3: %f, %f, %f, %f\n",
                              Axis3.GetWorldAngle(), Axis3.GetAngularRate(), Axis3.GetTargetRate(), Axis2.GetExtension());
         }
 

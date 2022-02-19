@@ -144,7 +144,7 @@ void Actuator::Update()
                 {
                         int signedSpeed = (actuatorDirection==EXTEND?1:-1)*actuatorSpeed;
 
-                        int KP = 3;
+                        int KP = 10;
 
                         int error = targetRate - angularRateOfChange;
                         signedSpeed = signedSpeed + KP*error;
@@ -233,9 +233,10 @@ void Actuator::SetTargetRate(float rate)
         //         SetDirection(RETRACT);
         // if (targetRate > 0)
         //         SetDirection(EXTEND);        
-        if (targetRate == 0)
+        if (abs(targetRate) < ROC_MINIMUM_RATE)
         {
                 controlMode = idle;
+                targetRate = 0;
                 SetSpeed(0);
         }
         

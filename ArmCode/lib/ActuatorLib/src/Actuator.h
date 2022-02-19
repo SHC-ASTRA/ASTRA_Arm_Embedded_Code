@@ -11,6 +11,7 @@
 #define HOMING_SPEED 200            // Speed to use when homing actuators
 
 #define ROC_CONTROL_TOLERANCE 0.15  // Degrees/second of toelrance to the rate of change
+#define ROC_MINIMUM_RATE 0.02       // Degrees/second minimum rate of change
 class Actuator
 {
     private:
