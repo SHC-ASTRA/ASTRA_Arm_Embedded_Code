@@ -220,7 +220,10 @@ void Actuator::SetTargetRate(float rate)
         if (targetRate > 0)
                 SetDirection(EXTEND);        
         if (targetRate == 0)
+        {
                 controlMode = idle;
+                SetSpeed(0);
+        }
         
 }
 
