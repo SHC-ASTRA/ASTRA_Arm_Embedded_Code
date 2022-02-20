@@ -121,7 +121,6 @@ void loop()
         switch (axis)
         {
         case 2:
-
             Axis2.SetTargetRate(value);
             break;
 
