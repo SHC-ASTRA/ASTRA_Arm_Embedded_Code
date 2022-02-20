@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <CircularBuffer.h>
 #include <Encoder.h>
+#include <QuickPID.h>
 
 #define EXTEND LOW
 #define RETRACT HIGH
@@ -69,11 +70,21 @@ class Actuator
         float CalculateAngle(float actuatorExtension);
         void CalculateAngularRate();
 
+        //PID bits
+        QuickPID* PID;
+        float pidSetpoint;
+        float pidInput;
+        float pidOutput;
+        float Kp;
+        float Ki;
+        float Kd;
+
     public:
         Actuator(int pwmPin, int dirPin, int encoderPinA,
         int encoderPinB, int lowerLimit, int upperLimit,
         float baseLength, float sideALength, float sideBLength, 
-        float dxde, float worldTransformAngle);
+        float dxde, float worldTransformAngle,
+        float kp, float ki, float kd);
 
         void Initalize();
 
@@ -96,6 +107,8 @@ class Actuator
 
         // Control Loop
         void Update();
+
+        void setPIDValues(float Kp, float Ki, float Kd);
 
         // Getter Functions
 

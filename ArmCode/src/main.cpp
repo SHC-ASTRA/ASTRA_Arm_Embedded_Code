@@ -13,13 +13,15 @@ Actuator Axis2(18, 19, 22, 23,          // PIns
                 0, 16000,               // Lower and Upper Limits
                 318.3, 90.0, 400.0,     // Length of: Actuator Fully Retracted, Side A, Side B
                 1 / 102.4,              // change in extension (mm) / change in encoder steps
-                -55.9);                 // Angle to transform calcualated angle to world angle
+                -55.9,                  // Angle to transform calcualated angle to world angle
+                4, 2, 0.2);              // PID Gains
 
 Actuator Axis3(14, 15, 40, 41,          // Pins
                 -20980+1000, 0,         // Lower and Upper Limits (Since Axis3 homes to extend, the range of travel is treated as negative)
                 521.5, 138.0, 444.5,    // Length of: Actuator Fully Extended, Side A, Side B
                 1 / 102.4,              // change in extension (mm) / change in encoder steps
-                -144.7);                // Angle to transform calculate angle to world angle
+                -144.7,                 // Angle to transform calculate angle to world angle
+                4, 2, 0.2);              // PID Gains
 
 
 void setup()
@@ -69,9 +71,11 @@ void setup()
     Axis3.Home(false);          MySerial->println("status;Axis 3 finished Homing Sequence.");
     Axis3.SetTarget(-1000);      MySerial->println("status;Axis 3 Target set for -17500.");
     //Axis3.WaitForTarget();      MySerial->println("status;Axis 3 reached Target.");
+
 }
 
 int lastTime = 0;
+int lastHeaderTime = 0;
 bool toggle = false;
 
 void loop()
@@ -89,17 +93,17 @@ void loop()
 
     // Sample Debugging Script
     // Prints out actuator stats while a control loop is active
-    if ((millis() - lastTime) > 20)
+    if ((millis() - lastTime) > 50)
     {
         if (Axis2.IsActive())
         {
-            MySerial->printf("feedback; 2: %f, %f, %f, %f\n",
-                             Axis2.GetWorldAngle(), Axis2.GetAngularRate(), Axis2.GetTargetRate(), Axis2.GetExtension());
+            MySerial->printf("feedback; 2: %f, %f, %f, %f, %i\n",
+                             Axis2.GetWorldAngle(), Axis2.GetAngularRate(), Axis2.GetTargetRate(), Axis2.GetExtension(), Axis2.GetSpeed()*(Axis2.GetDirection()==EXTEND?1:-1));
         }
         if (Axis3.IsActive())
         {
-            MySerial->printf("feedback; 3: %f, %f, %f, %f\n",
-                             Axis3.GetWorldAngle(), Axis3.GetAngularRate(), Axis3.GetTargetRate(), Axis2.GetExtension());
+            MySerial->printf("feedback; 3: %f, %f, %f, %f, %i\n",
+                             Axis3.GetWorldAngle(), Axis3.GetAngularRate(), Axis3.GetTargetRate(), Axis3.GetExtension(), Axis3.GetSpeed()*(Axis3.GetDirection()==EXTEND?1:-1));
         }
 
         lastTime = millis();

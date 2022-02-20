@@ -1,9 +1,10 @@
 #include "Actuator.h"
 
 Actuator::Actuator(int pwmPin, int dirPin, int encoderPinA,
-        int encoderPinB, int lowerLimit, int upperLimit,
-        float baseLength, float sideALength, float sideBLength, 
-        float dxde, float worldTransformAngle)
+                   int encoderPinB, int lowerLimit, int upperLimit,
+                   float baseLength, float sideALength, float sideBLength,
+                   float dxde, float worldTransformAngle,
+                   float kp, float ki, float kd)
 {
         this->pwmPin = pwmPin;
         this->dirPin = dirPin;
@@ -16,6 +17,13 @@ Actuator::Actuator(int pwmPin, int dirPin, int encoderPinA,
         this->sideBLength = sideBLength;
         this->dxde = dxde;
         this->worldTransformAngle = worldTransformAngle;
+        this->Kp = kp;
+        this->Ki = ki;
+        this->Kd = kd;
+
+        this->pidSetpoint = 0;
+        this->pidInput = 0;
+        this->pidOutput = 0;
 }
 
 void Actuator::Initalize()
@@ -34,6 +42,17 @@ void Actuator::Initalize()
         ResetBuffers();
 
         controlMode = idle;
+
+        PID = new QuickPID(&pidInput, &pidOutput, &pidSetpoint);
+        PID->SetTunings(Kp, Ki, Kd);
+        PID->SetOutputLimits(-255, 255);
+        PID->SetAntiWindupMode(QuickPID::iAwMode::iAwClamp);
+        PID->SetSampleTimeUs(20000);
+}
+
+void Actuator::setPIDValues(float Kp, float Ki, float Kd)
+{
+        PID->SetTunings(Kp, Ki, Kd);
 }
 
 void Actuator::ResetBuffers()
@@ -54,7 +73,7 @@ void Actuator::AddToBuffer()
 void Actuator::SetSignedSpeed(short speed)
 {
         SetSpeed(abs(speed));
-        SetDirection(speed>0?EXTEND:RETRACT);
+        SetDirection(speed > 0 ? EXTEND : RETRACT);
 }
 
 float Actuator::CalculateExtension(int encoderReading)
@@ -64,18 +83,17 @@ float Actuator::CalculateExtension(int encoderReading)
 
 float Actuator::CalculateAngle(float actuatorExtension)
 {
-        return (180.f / M_PI) * acosf((powf(actuatorExtension, 2) - (powf(sideALength, 2) + powf(sideBLength, 2))) / (-2*sideALength*sideBLength));
+        return (180.f / M_PI) * acosf((powf(actuatorExtension, 2) - (powf(sideALength, 2) + powf(sideBLength, 2))) / (-2 * sideALength * sideBLength));
 }
 
 void Actuator::CalculateAngularRate()
 {
         int dT = timingBuffer.first() - timingBuffer.last();
-        
-        float oldAngle = CalculateAngle(
-                CalculateExtension(encoderBuffer.last())
-        );
 
-        angularRateOfChange = (angle - oldAngle) / (dT) * 1000.0;
+        float oldAngle = CalculateAngle(
+            CalculateExtension(encoderBuffer.last()));
+
+        angularRateOfChange = (angle - oldAngle) / (dT)*1000.0;
 }
 
 void Actuator::Update()
@@ -100,7 +118,7 @@ void Actuator::Update()
         if (controlMode == target)
         {
                 int step = encoder->read();
-                
+
                 if (step == actuatorTarget)
                 {
                         actuatorTarget = 0;
@@ -111,46 +129,39 @@ void Actuator::Update()
                 }
 
                 // Quadratic Formula allows for the actuator to ease in to approaching the target
-                int ease = -((step - targetInitialStep)*(step - actuatorTarget)) / abs(actuatorTarget - targetInitialStep);
-                int speed = min(255, abs(ease) + 100); 
+                int ease = -((step - targetInitialStep) * (step - actuatorTarget)) / abs(actuatorTarget - targetInitialStep);
+                int speed = min(255, abs(ease) + 100);
 
                 SetSpeed(speed);
                 if (actuatorTarget < targetInitialStep)
                         SetDirection(RETRACT);
                 else
                         SetDirection(EXTEND);
-                        
-        } else if (controlMode == rateOfChange)
+        }
+        else if (controlMode == rateOfChange)
         {
                 int step = encoder->read();
-                if ((step >= upperLimit && actuatorDirection == EXTEND) || (step <= lowerLimit && actuatorDirection == RETRACT))
-                {
-                        controlMode = idle;
-                        SetSpeed(0);
-                        
-                        if(step >= upperLimit)
+                if (newRateOfChange)
+                {       
+                        pidInput = angularRateOfChange;
+
+                        pidSetpoint = targetRate;
+
+                        if ((step >= upperLimit-250 && targetRate>0) || (step <= lowerLimit+250 && targetRate < 0))
                         {
-                                SetDirection(RETRACT);
-                        }
-                        else
-                        {
-                                SetDirection(EXTEND);
+                                targetRate = 0; 
                         }
 
-                        return;
+                        PID->Compute();
+
+                        int signedSpeed = GetSpeed()*(GetDirection()==EXTEND?1:-1);
+                        signedSpeed = round(max(min(signedSpeed + pidOutput, 255), -255));
+                        SetSignedSpeed(signedSpeed);
                 }
 
-                if (newRateOfChange)
+                if ((step >= upperLimit && actuatorDirection == EXTEND) || (step <= lowerLimit && actuatorDirection == RETRACT))
                 {
-                        int signedSpeed = (actuatorDirection==EXTEND?1:-1)*actuatorSpeed;
-
-                        int KP = 10;
-
-                        int error = targetRate - angularRateOfChange;
-                        signedSpeed = signedSpeed + KP*error;
-
-                        signedSpeed = max(min(signedSpeed,255),-255);
-                        SetSignedSpeed(signedSpeed);
+                        SetSpeed(0);
                 }
         }
 }
@@ -162,7 +173,7 @@ void Actuator::Home(bool retract)
                 SetDirection(RETRACT);
         else
                 SetDirection(EXTEND);
-        
+
         // Log the start position, then power the actuator
         int step = encoder->read();
         SetSpeed(HOMING_SPEED);
@@ -179,7 +190,7 @@ void Actuator::Home(bool retract)
                 else
                         step = nextStep;
         } while (1);
-        
+
         // Power down actuator
         SetSpeed(0);
 
@@ -199,7 +210,7 @@ bool Actuator::IsEStopActive()
 
         if (step != stepAfter)
                 return false;
-        
+
         step = encoder->read();
         SetDirection(RETRACT);
         SetSpeed(HOMING_SPEED);
@@ -226,20 +237,22 @@ void Actuator::SetTarget(int step)
 
 void Actuator::SetTargetRate(float rate)
 {
+        PID->SetMode(QuickPID::Control::automatic);
+        
         controlMode = rateOfChange;
         targetRate = rate;
 
         // if (targetRate < 0)
         //         SetDirection(RETRACT);
         // if (targetRate > 0)
-        //         SetDirection(EXTEND);        
-        if (abs(targetRate) < ROC_MINIMUM_RATE)
-        {
-                controlMode = idle;
-                targetRate = 0;
-                SetSpeed(0);
-        }
-        
+        //         SetDirection(EXTEND);
+        // if (abs(targetRate) < ROC_MINIMUM_RATE)
+        // {
+        //         controlMode = idle;
+        //         targetRate = 0;
+        //         SetSpeed(0);
+        //         PID->SetMode(QuickPID::Control::manual);
+        // }
 }
 
 void Actuator::WaitForTarget()
