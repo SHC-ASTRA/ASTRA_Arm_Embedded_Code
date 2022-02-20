@@ -24,7 +24,7 @@ class Stepper
         // 50 * 400 * 32 = 1 revolution of the small pulley
         // 2 revolution of small pulley = 1 revolution of big pulley
         // 50 * 400 * 32 * 2 = 360 degrees
-        float stepsPerDegree = (50 * 400 * 32 * 2) / 180.0;
+        float stepsPerDegree = (50 * 400 * 32) / 360.0;
         float targetRate;
 
         HighPowerStepperDriver sd;

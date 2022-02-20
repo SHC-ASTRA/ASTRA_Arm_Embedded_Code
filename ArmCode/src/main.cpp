@@ -68,7 +68,7 @@ void setup()
 
     Axis2.Home();
     MySerial->println("status;Axis 2 finished Homing Sequence.");
-    Axis2.SetTarget(4000);
+    //Axis2.SetTarget(4000);
     MySerial->println("status;Axis 2 Target set for 10500.");
     // Axis2.WaitForTarget();      MySerial->println("status;Axis 2 reached Target.");
 
@@ -77,7 +77,7 @@ void setup()
     MySerial->println("status;Axis 3 Initalized, beginning homing sequence.");
     Axis3.Home(false);
     MySerial->println("status;Axis 3 finished Homing Sequence.");
-    Axis3.SetTarget(-1000);
+    //Axis3.SetTarget(-1000);
     MySerial->println("status;Axis 3 Target set for -17500.");
     // Axis3.WaitForTarget();      MySerial->println("status;Axis 3 reached Target.");
 }
