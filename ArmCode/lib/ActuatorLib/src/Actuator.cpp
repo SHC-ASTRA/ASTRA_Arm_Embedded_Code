@@ -142,19 +142,19 @@ void Actuator::Update()
         {
                 int step = encoder->read();
                 if (newRateOfChange)
-                {       
+                {
                         pidInput = angularRateOfChange;
 
                         pidSetpoint = targetRate;
 
-                        if ((step >= upperLimit-250 && targetRate>0) || (step <= lowerLimit+250 && targetRate < 0))
+                        if ((step >= upperLimit - 250 && targetRate > 0) || (step <= lowerLimit + 250 && targetRate < 0))
                         {
-                                targetRate = 0; 
+                                targetRate = 0;
                         }
 
                         PID->Compute();
 
-                        int signedSpeed = GetSpeed()*(GetDirection()==EXTEND?1:-1);
+                        int signedSpeed = GetSpeed() * (GetDirection() == EXTEND ? 1 : -1);
                         signedSpeed = round(max(min(signedSpeed + pidOutput, 255), -255));
                         SetSignedSpeed(signedSpeed);
                 }
@@ -238,7 +238,7 @@ void Actuator::SetTarget(int step)
 void Actuator::SetTargetRate(float rate)
 {
         PID->SetMode(QuickPID::Control::automatic);
-        
+
         controlMode = rateOfChange;
         targetRate = rate;
 
