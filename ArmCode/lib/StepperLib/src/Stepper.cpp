@@ -30,5 +30,55 @@ bool Stepper::Initialize()
     // Set the number of microsteps that correspond to one full step.
     sd.setStepMode(HPSDStepMode::MicroStep32);
 
+    SetTargetRate(0);
+
     return sd.verifySettings();
+}
+
+void Stepper::Update()
+{
+    if (micros() - timeLastStep > timeStep)
+    {
+        sd.step();
+        steps += direction;
+        timeLastStep = micros();
+    }
+}
+
+void Stepper::SetDirection(int direction)
+{
+    this->direction = direction;
+
+    if (direction == COUNTERCLOCKWISE)
+    {
+        sd.setDirection(0);
+    } else if (direction == CLOCKWISE)
+    {
+        sd.setDirection(1);
+    }
+}
+
+float Stepper::GetRotation()
+{
+    return steps / stepsPerDegree;
+}
+
+void Stepper::SetTargetRate(float targetRate)
+{
+    this->targetRate = targetRate;
+
+    if (targetRate > 0)
+        SetDirection(COUNTERCLOCKWISE);
+    if (targetRate < 0)
+        SetDirection(CLOCKWISE);
+    
+    if (targetRate == 0)
+        timeStep = INT32_MAX;
+    else
+    {
+        // degrees / second
+        // steps / degrees
+        // steps / second
+        timeStep = abs((1.0 / (targetRate * stepsPerDegree)) * 1000000);
+    }
 }

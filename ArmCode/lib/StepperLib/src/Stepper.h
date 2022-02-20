@@ -2,8 +2,8 @@
 #include <SPI.h>
 #include <HighPowerStepperDriver.h>
 
-#define CLOCKWISE 0
-#define COUNTERCLOCKWISE 1
+#define CLOCKWISE 1
+#define COUNTERCLOCKWISE -1
 
 class Stepper
 {
@@ -16,10 +16,16 @@ class Stepper
 
         // Stepper 
         int steps = 0;
-        int lowerLimit;
-        int upperLimit;
+        float lowerLimit;
+        float upperLimit;
+        int direction;
+        int timeLastStep;
+        int timeStep;
         // 50 * 400 * 32 = 1 revolution of the small pulley
         // 2 revolution of small pulley = 1 revolution of big pulley
+        // 50 * 400 * 32 * 2 = 360 degrees
+        float stepsPerDegree = (50 * 400 * 32 * 2) / 180.0;
+        float targetRate;
 
         HighPowerStepperDriver sd;
 
@@ -31,6 +37,12 @@ class Stepper
         void Enable() { sd.enableDriver(); }
         void Disable() { sd.disableDriver(); }
 
-        void SetTarget();
-        void SetTargetRate();
+        void Update();
+
+        void SetDirection(int direction);
+        void SetTarget(float targetAngle);
+        void SetTargetRate(float targetRate);
+
+        float GetRotation();
+        bool IsActive() { return targetRate != 0; }
 };

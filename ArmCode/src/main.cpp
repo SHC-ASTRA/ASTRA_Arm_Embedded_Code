@@ -52,6 +52,10 @@ void setup()
 
     MySerial->println("status;Starting Arm Base Teensy!");
 
+    MySerial->println("status;Initializing Axis 1.");
+    Axis1.Initialize();
+    Axis1.Enable();
+
     MySerial->println("status;Initializing Axis 2.");
     Axis2.Initalize();
     MySerial->println("status;Axis 2 Initalized, beginning homing sequence.");
@@ -92,6 +96,7 @@ void loop()
     */
 
     // These functions update the control loops, need to run as frequently as possible.
+    Axis1.Update();
     Axis2.Update();
     Axis3.Update();
 
@@ -99,6 +104,11 @@ void loop()
     // Prints out actuator stats while a control loop is active
     if ((millis() - lastTime) > 50)
     {
+        if (Axis1.IsActive())
+        {
+            MySerial->printf("feedback; 1: %f\n",
+                             Axis1.GetRotation());
+        }
         if (Axis2.IsActive())
         {
             MySerial->printf("feedback; 2: %f, %f, %f, %f, %i\n",
@@ -120,6 +130,10 @@ void loop()
         float value = command.substring(2).toFloat();
         switch (axis)
         {
+        case 1:
+            Axis1.SetTargetRate(value);
+            break;
+
         case 2:
             Axis2.SetTargetRate(value);
             break;
