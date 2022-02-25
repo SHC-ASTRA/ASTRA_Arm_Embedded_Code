@@ -145,6 +145,8 @@ void home()
     }
 
     Axis3.Home(false);
+    Axis3.SetTarget(-19980);
+    Axis3.WaitForTarget();
     MySerial->println("status;Axis 3 finished homing.");
 
     Axis2.Home();
