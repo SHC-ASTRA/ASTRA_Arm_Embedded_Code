@@ -123,9 +123,32 @@ void loop()
             Axis3.SetTargetRate(value);
             break;
 
+        case 'h' + '0':
+            home();
+            break;
+
         default:
-            MySerial->printf("status; Invalid axis: %i\n", axis);
+            MySerial->printf("status;Invalid axis: %i\n", axis);
             break;
         }
     }
+}
+
+void home()
+{
+    MySerial->println("status;Beginning homing sequence.");
+
+    if (Axis2.IsEStopActive() && Axis3.IsEStopActive())
+    {
+        MySerial->println("error;E-Stop active during homing sequence, aborting.");
+        MySerial->println("homing_status;false");
+    }
+
+    Axis3.Home(false);
+    MySerial->println("status;Axis 3 finished homing.");
+
+    Axis2.Home();
+    MySerial->println("status;Axis 2 finished homing.");
+
+    MySerial->println("homing_status;true");
 }
