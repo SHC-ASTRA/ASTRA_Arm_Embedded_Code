@@ -45,4 +45,5 @@ class Stepper
 
         float GetRotation();
         bool IsActive() { return targetRate != 0; }
+        float GetAngularRate() { return targetRate; } // If we implement accel, make this smarter
 };

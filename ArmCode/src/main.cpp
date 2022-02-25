@@ -32,7 +32,7 @@ void setup()
     Serial.println("status;Beginning Setup");
     Serial1.println("status;Beginning Setup");
 
-    while (!Serial && millis() < 100000)
+    while (!Serial && millis() < 10000)
     {
         delay(10);
     }
@@ -63,6 +63,8 @@ void setup()
     while (Axis2.IsEStopActive())
     {
         MySerial->println("status;EStop detected... trying again in 1 second.");
+        MySerial->printf("feedback;x=1,a=%f,r=%f\n",
+                             123.456, 1337.42069);
         delay(1000);
     }
 
@@ -106,18 +108,18 @@ void loop()
     {
         if (Axis1.IsActive())
         {
-            MySerial->printf("feedback; 1: %f\n",
-                             Axis1.GetRotation());
+            MySerial->printf("feedback;x=1,a=%f,r=%f\n",
+                             Axis1.GetRotation(), Axis1.GetAngularRate());
         }
         if (Axis2.IsActive())
         {
-            MySerial->printf("feedback; 2: %f, %f, %f, %f, %i\n",
-                             Axis2.GetWorldAngle(), Axis2.GetAngularRate(), Axis2.GetTargetRate(), Axis2.GetExtension(), Axis2.GetSpeed() * (Axis2.GetDirection() == EXTEND ? 1 : -1));
+            MySerial->printf("feedback;x=2,a=%f,r=%f\n",
+                             Axis2.GetWorldAngle(), Axis2.GetAngularRate());
         }
         if (Axis3.IsActive())
         {
-            MySerial->printf("feedback; 3: %f, %f, %f, %f, %i\n",
-                             Axis3.GetWorldAngle(), Axis3.GetAngularRate(), Axis3.GetTargetRate(), Axis3.GetExtension(), Axis3.GetSpeed() * (Axis3.GetDirection() == EXTEND ? 1 : -1));
+            MySerial->printf("feedback;x=3,a=%f,r=%f\n",
+                             Axis3.GetWorldAngle(), Axis3.GetAngularRate());
         }
 
         lastTime = millis();
@@ -143,7 +145,7 @@ void loop()
             break;
 
         default:
-            MySerial->printf("error; Invalid axis: %i\n", axis);
+            MySerial->printf("status; Invalid axis: %i\n", axis);
             break;
         }
     }
