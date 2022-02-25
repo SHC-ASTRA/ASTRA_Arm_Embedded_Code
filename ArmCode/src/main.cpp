@@ -63,8 +63,8 @@ void setup()
     while (Axis2.IsEStopActive())
     {
         MySerial->println("status;EStop detected... trying again in 1 second.");
-        MySerial->printf("feedback;x=1,a=%f,r=%f\n",
-                             123.456, 1337.42069);
+        // MySerial->printf("feedback;x=1,a=%f,r=%f\n",
+        //                      123.456, 1337.42069); // Test feedback
         delay(1000);
     }
 
