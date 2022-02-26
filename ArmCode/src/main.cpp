@@ -6,28 +6,28 @@ Stream *MySerial;
 
 // Stepper Declaration
 Stepper Axis1(10, 29,     // Pins
-              -270, 270); // Lower and Upper Li   Service2.srvmits
+              -270, 270); // Lower and Upper Limits
 
 // Linear Actuator Declarations
 Actuator Axis2(18, 19, 22, 23,     // PIns
                0, 16000,           // Lower and Upper Limits
                318.3, 90.0, 400.0, // Length of: Actuator Fully Retracted, Side A, Side B
                1 / 102.4,          // change in extension (mm) / change in encoder steps
-               -55.9,              // Angle to transform calcualated angle to world angle
+               -55.9, true,              // Angle to transform calcualated angle to world angle
                4, 2, 0.2);         // PID Gains
 
 Actuator Axis3(14, 15, 40, 41,      // Pins
                -20980 + 1000, 0,    // Lower and Upper Limits (Since Axis3 homes to extend, the range of travel is treated as negative)
                521.5, 138.0, 444.5, // Length of: Actuator Fully Extended, Side A, Side B
                1 / 102.4,           // change in extension (mm) / change in encoder steps
-               -144.7,              // Angle to transform calculate angle to world angle
+               -144.7, true,              // Angle to transform calculate angle to world angle
                4, 2, 0.2);          // PID Gains
 
 Actuator Axis4(36, 37, 34, 35,      // Pins
                0, 6500,             // Lower and Upper Limits
                216.6, 40.7, 250.8,  // Length of: Actuator Fully Retracted, Side A, Side B
                1 / 102.4,           // change in extension (mm) / change in encoder steps
-               0,                   // Angle to transform calculated angle to world angle
+               62.1, false,                   // Angle to transform calculated angle to world angle, 
                4, 2, 0.2);          // PID Gains
 
 void home();

@@ -3,7 +3,7 @@
 Actuator::Actuator(int pwmPin, int dirPin, int encoderPinA,
                    int encoderPinB, int lowerLimit, int upperLimit,
                    float baseLength, float sideALength, float sideBLength,
-                   float dxde, float worldTransformAngle,
+                   float dxde, float worldTransformAngle, bool worldTransformPositive,
                    float kp, float ki, float kd)
 {
         this->pwmPin = pwmPin;
@@ -17,6 +17,7 @@ Actuator::Actuator(int pwmPin, int dirPin, int encoderPinA,
         this->sideBLength = sideBLength;
         this->dxde = dxde;
         this->worldTransformAngle = worldTransformAngle;
+        this->worldTransformPositive = worldTransformPositive;
         this->Kp = kp;
         this->Ki = ki;
         this->Kd = kd;
@@ -240,7 +241,7 @@ void Actuator::SetTargetRate(float rate)
         PID->SetMode(QuickPID::Control::automatic);
 
         controlMode = rateOfChange;
-        targetRate = rate;
+        targetRate = rate * (worldTransformPositive?1:-1);
 
         // if (targetRate < 0)
         //         SetDirection(RETRACT);
