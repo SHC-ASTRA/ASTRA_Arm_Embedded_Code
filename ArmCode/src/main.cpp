@@ -23,13 +23,20 @@ Actuator Axis3(14, 15, 40, 41,      // Pins
                -144.7,              // Angle to transform calculate angle to world angle
                4, 2, 0.2);          // PID Gains
 
+Actuator Axis4(36, 37, 34, 35,      // Pins
+               0, 6500,             // Lower and Upper Limits
+               216.6, 40.7, 250.8,  // Length of: Actuator Fully Retracted, Side A, Side B
+               1 / 102.4,           // change in extension (mm) / change in encoder steps
+               0,                   // Angle to transform calculated angle to world angle
+               4, 2, 0.2);          // PID Gains
+
 void home();
 
 void setup()
 {
 #pragma region Serial Configuration
-    Serial.begin(9600);
-    Serial1.begin(9600);
+    Serial.begin(115200);
+    Serial1.begin(115200);
 
     Serial.println("status;Beginning Setup");
     Serial1.println("status;Beginning Setup");
@@ -63,6 +70,9 @@ void setup()
 
     MySerial->println("status;Initializing Axis 3.");
     Axis3.Initalize();
+
+    MySerial->println("status;Initializing Axis 4.");
+    Axis4.Initalize();
 }
 
 int lastTime = 0;
@@ -82,6 +92,7 @@ void loop()
     Axis1.Update();
     Axis2.Update();
     Axis3.Update();
+    Axis4.Update();
 
     // Sample Debugging Script
     // Prints out actuator stats while a control loop is active
@@ -101,6 +112,11 @@ void loop()
         {
             MySerial->printf("feedback;x=3,a=%f,r=%f\n",
                              Axis3.GetWorldAngle(), Axis3.GetAngularRate());
+        }
+        if (Axis4.IsActive())
+        {
+            MySerial->printf("feedback;x=4,a=%f,r=%f\n",
+                             Axis4.GetWorldAngle(), Axis4.GetAngularRate());
         }
 
         lastTime = millis();
@@ -130,6 +146,10 @@ void loop()
             Axis3.SetTargetRate(value);
             break;
 
+        case 4:
+            Axis4.SetTargetRate(value);
+            break;
+
         case 'h' - '0':
             home();
             break;
@@ -152,6 +172,12 @@ void home()
         return;
     }
 
+    MySerial->println("status;Axis 4 started homing.");
+    Axis4.Home();
+    Axis4.SetTarget(5000);
+    Axis4.WaitForTarget();
+    MySerial->println("status;Axis 4 finished homing.");
+
     MySerial->println("status;Axis 3 started homing.");
     Axis3.Home(false);
     Axis3.SetTarget(-19980);
@@ -161,6 +187,11 @@ void home()
     MySerial->println("status;Axis 2 started homing.");
     Axis2.Home();
     MySerial->println("status;Axis 2 finished homing.");
+
+    MySerial->println("status;Transitioning to ready state.");
+    Axis2.SetTarget(13000);
+    Axis2.WaitForTarget();
+    MySerial->println("status; Arm is in ready state.");
 
     MySerial->println("homing_status;true");
 }
