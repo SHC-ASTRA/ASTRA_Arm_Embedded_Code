@@ -106,9 +106,13 @@ void loop()
         lastTime = millis();
     }
 
-    if (MySerial->available() > 1)
+    if (MySerial->available() > 0)
     {
         String command = MySerial->readStringUntil('\n');
+        if(command.length()==0)
+        {
+            return;
+        }
         int axis = command.charAt(0) - '0';
         float value = command.substring(2).toFloat();
 
