@@ -6,7 +6,7 @@ Stream *MySerial;
 
 // Stepper Declaration
 Stepper Axis1(10, 29,     // Pins
-              -270, 270); // Lower and Upper Limits
+              -270, 270); // Lower and Upper Li   Service2.srvmits
 
 // Linear Actuator Declarations
 Actuator Axis2(18, 19, 22, 23,     // PIns
@@ -23,11 +23,13 @@ Actuator Axis3(14, 15, 40, 41,      // Pins
                -144.7,              // Angle to transform calculate angle to world angle
                4, 2, 0.2);          // PID Gains
 
+void home();
+
 void setup()
 {
 #pragma region Serial Configuration
-    Serial.begin(115200);
-    Serial1.begin(115200);
+    Serial.begin(9600);
+    Serial1.begin(9600);
 
     Serial.println("status;Beginning Setup");
     Serial1.println("status;Beginning Setup");
@@ -109,6 +111,7 @@ void loop()
         String command = MySerial->readStringUntil('\n');
         int axis = command.charAt(0) - '0';
         float value = command.substring(2).toFloat();
+
         switch (axis)
         {
         case 1:
@@ -123,7 +126,7 @@ void loop()
             Axis3.SetTargetRate(value);
             break;
 
-        case 'h' + '0':
+        case 'h' - '0':
             home();
             break;
 
@@ -138,17 +141,20 @@ void home()
 {
     MySerial->println("status;Beginning homing sequence.");
 
-    if (Axis2.IsEStopActive() && Axis3.IsEStopActive())
+    if (Axis2.IsEStopActive() || Axis3.IsEStopActive())
     {
         MySerial->println("error;E-Stop active during homing sequence, aborting.");
         MySerial->println("homing_status;false");
+        return;
     }
 
+    MySerial->println("status;Axis 3 started homing.");
     Axis3.Home(false);
     Axis3.SetTarget(-19980);
     Axis3.WaitForTarget();
     MySerial->println("status;Axis 3 finished homing.");
 
+    MySerial->println("status;Axis 2 started homing.");
     Axis2.Home();
     MySerial->println("status;Axis 2 finished homing.");
 
