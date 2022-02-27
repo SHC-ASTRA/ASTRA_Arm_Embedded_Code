@@ -33,6 +33,8 @@ Actuator Axis4(36, 37, 34, 35,      // Pins
 bool homed = false;
 
 void home();
+void lowHome();
+void homingRoutine();
 void kill();
 
 void setup()
@@ -164,14 +166,11 @@ void loop()
             break;
 
         case 'h' - '0':
-            if (value == 69420)
-            {
-                homed = true; // For contingencies, set the arm to homed without homing to skip homing routine
-            }
-            else
-            {
-                home();
-            }
+            home();
+            break;
+
+        case 'l' - '0': // Low homing routine, raises axis 2 first
+            lowHome();
             break;
 
         case 'k' - '0':
@@ -206,6 +205,31 @@ void home()
         return;
     }
 
+    homingRoutine();
+}
+
+void lowHome()
+{
+    MySerial->println("status;Beginning modified homing sequence.");
+    MySerial->println("status;ONLY USE IF AXIS 2 IS BELOW HORIZONTAL");
+
+    if (Axis2.IsEStopActive() || Axis3.IsEStopActive())
+    {
+        MySerial->println("error;E-Stop active during homing sequence, aborting.");
+        MySerial->println("homing_status;false");
+        return;
+    }
+
+    MySerial->println("status;Moving Axis 2 to avoid ground contact");
+    Axis2.SetTarget(5000);
+
+    MySerial->println("status;Transitioning to normal homing routine");
+
+    homingRoutine();
+}
+
+void homingRoutine()
+{
     MySerial->println("status;Axis 4 started homing.");
     Axis4.Home();
     Axis4.SetTarget(5000);
