@@ -99,6 +99,8 @@ class Actuator
         // This function blocks the program until the actuator reaches the desired target step.
         void WaitForTarget();
 
+        void SetIdle();
+
         // This function homes the actuator
         // This function is blocking
         void Home(bool retract=true);

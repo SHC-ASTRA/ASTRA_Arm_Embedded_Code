@@ -46,8 +46,7 @@ void Actuator::Initalize()
 
         PID = new QuickPID(&pidInput, &pidOutput, &pidSetpoint);
         PID->SetTunings(Kp, Ki, Kd);
-        PID->SetOutputLimits(-255, 255);
-        PID->SetAntiWindupMode(QuickPID::iAwMode::iAwClamp);
+        PID->SetOutputLimits(-100, 100);
         PID->SetSampleTimeUs(20000);
 }
 
@@ -165,6 +164,13 @@ void Actuator::Update()
                         SetSpeed(0);
                 }
         }
+}
+
+void Actuator::SetIdle()
+{
+        SetTargetRate(0);
+        PID->SetMode(QuickPID::Control::automatic);
+        SetSpeed(0);
 }
 
 void Actuator::Home(bool retract)

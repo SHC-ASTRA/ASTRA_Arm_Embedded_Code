@@ -30,7 +30,10 @@ Actuator Axis4(36, 37, 34, 35,      // Pins
                62.1, false,                   // Angle to transform calculated angle to world angle, 
                4, 2, 0.2);          // PID Gains
 
+bool homed = false;
+
 void home();
+void kill();
 
 void setup()
 {
@@ -94,6 +97,16 @@ void loop()
     Axis3.Update();
     Axis4.Update();
 
+    if(!homed)
+    {
+        if(abs(Axis2.GetStep())> 20 || abs(Axis3.GetStep())> 20 || abs(Axis4.GetStep())> 20)
+        {
+            MySerial->println("error;Actuator movement before homing!");
+            kill();
+            MySerial->println("error;Actuators auto-disabled!");
+        }
+    }
+
     // Sample Debugging Script
     // Prints out actuator stats while a control loop is active
     if ((millis() - lastTime) > 50)
@@ -131,7 +144,7 @@ void loop()
         }
         int axis = command.charAt(0) - '0';
         float value = command.substring(2).toFloat();
-
+    
         switch (axis)
         {
         case 1:
@@ -151,7 +164,18 @@ void loop()
             break;
 
         case 'h' - '0':
-            home();
+            if (value == 69420)
+            {
+                homed = true; // For contingencies, set the arm to homed without homing to skip homing routine
+            }
+            else
+            {
+                home();
+            }
+            break;
+
+        case 'k' - '0':
+            kill();
             break;
 
         default:
@@ -159,6 +183,16 @@ void loop()
             break;
         }
     }
+}
+
+
+void kill()
+{
+    Axis1.SetTargetRate(0);
+    Axis1.Disable();
+    Axis2.SetIdle();
+    Axis3.SetIdle();
+    Axis4.SetIdle();
 }
 
 void home()
@@ -194,4 +228,6 @@ void home()
     MySerial->println("status; Arm is in ready state.");
 
     MySerial->println("homing_status;true");
+
+    homed = true;
 }
