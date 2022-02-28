@@ -222,6 +222,7 @@ void lowHome()
 
     MySerial->println("status;Moving Axis 2 to avoid ground contact");
     Axis2.SetTarget(5000);
+    Axis2.WaitForTarget();
 
     MySerial->println("status;Transitioning to normal homing routine");
 
